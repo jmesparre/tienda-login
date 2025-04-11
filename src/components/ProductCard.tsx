@@ -47,15 +47,18 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   // Effect to update modification status when local quantities change relative to cart state
   useEffect(() => {
+    let modified = false; // Initialize modified flag
     if (isInCart) {
+      // If in cart, modified if local state differs from initial cart state
       const kgMatch = quantityKg === initialKg;
       const gramsMatch = quantityGrams === initialGrams;
       const unitsMatch = quantityUnits === initialUnits;
-      setIsModified(!(kgMatch && gramsMatch && unitsMatch));
+      modified = !(kgMatch && gramsMatch && unitsMatch);
     } else {
-      // If not in cart, it's not considered 'modified' relative to the cart
-      setIsModified(false);
+      // If not in cart (initial state is 0), modified if any quantity is > 0
+      modified = quantityKg > 0 || quantityGrams > 0 || quantityUnits > 0;
     }
+    setIsModified(modified);
     // Rerun effect if local quantities or initial (cart) quantities change
   }, [quantityKg, quantityGrams, quantityUnits, initialKg, initialGrams, initialUnits, isInCart]);
 
@@ -246,7 +249,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               style={{ cursor: 'pointer', textDecoration: 'underline', marginBottom: 'var(--space-1)' }} // Add styling
               align="right"
             >
-              Eliminar del carrito
+              Quitar
             </Text>
           )}
           {/* Add conditional color prop */}
@@ -257,7 +260,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             onClick={handleAddToCart}
             mt="auto"
           >
-            {isInCart && isModified ? 'Modificar carrito' : 'Sumar al carrito'}
+            {isInCart ? (isModified ? 'Modificar' : 'Comprado') : 'Comprar'}
           </Button>
         </Flex>
       </Flex>
