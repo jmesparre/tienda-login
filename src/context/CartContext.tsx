@@ -44,7 +44,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const addToCart = (product: Omit<CartItem, 'quantityKg' | 'quantityGrams' | 'quantityUnits'>, quantities: { kg?: number; grams?: number; units?: number }) => {
     setCartItems(prevItems => {
       const existingItemIndex = prevItems.findIndex(item => item.id === product.id);
-      let newItems = [...prevItems];
+      const newItems = [...prevItems]; // Changed let to const
 
       const quantityKg = quantities.kg ?? 0;
       const quantityGrams = quantities.grams ?? 0;

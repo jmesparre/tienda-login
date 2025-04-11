@@ -3,8 +3,8 @@ import Image from 'next/image'; // Using next/image for potential optimization
 import { PlusIcon, MinusIcon } from '@radix-ui/react-icons';
 import { useState, useEffect } from 'react'; // Import useState and useEffect
 import { useCart } from '@/context/CartContext'; // Import useCart
-import { categoryColorMap } from '@/lib/utils'; // Import color map
-import clsx from 'clsx'; // Import clsx
+import clsx from 'clsx'; // Re-added clsx import
+// Removed unused import: categoryColorMap
 
 // Import the Product type definition (assuming it might be moved later)
 // If ProductGrid is the only place it's defined, this import isn't needed here,
@@ -171,10 +171,8 @@ export default function ProductCard({ product }: ProductCardProps) {
       <Flex gap="4" align="start"> {/* Use string "4" */}
         {/* Image Box (Left) */}
         <Box width="80px" height="80px" flexShrink="0" style={{ aspectRatio: '1 / 1', background: '#eee', borderRadius: 'var(--radius-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}> {/* Use string "0" */}
-          <Text size="1" color="gray">Image</Text>
-          {/* Example using next/image:
-          <Image src={product.imageUrl} alt={product.name} width={80} height={80} style={{ objectFit: 'cover', borderRadius: 'var(--radius-2)' }} />
-          */}
+          {/* Using apple-small.jpg as temporary image */}
+          <Image src="/apple-small.jpg" alt={product.name} width={80} height={80} style={{ objectFit: 'cover', borderRadius: 'var(--radius-2)' }} />
         </Box>
 
         {/* Center Column: Info + Quantity */}
@@ -256,7 +254,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           <Button
             size="2"
             variant="solid"
-            color={isInCart ? 'green' : undefined} // Change color to green if in cart
+            // Apply green color only when 'Comprado' (in cart, not modified)
+            color={isInCart && !isModified ? 'green' : undefined}
+            // Add specific class for 'Modificar' state
+            className={clsx({
+              'button-dark-green': isInCart && isModified,
+            })}
             onClick={handleAddToCart}
             mt="auto"
           >

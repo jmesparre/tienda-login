@@ -24,3 +24,9 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom class for darker green button */
+.button-dark-green {
+  background-color: var(--green-12) !important; /* Use Radix green scale, !important to override default */
+  color: white !important; /* Ensure text is readable */
+}
