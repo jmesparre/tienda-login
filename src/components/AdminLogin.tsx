@@ -20,8 +20,8 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
     setLoading(true); // Set loading
 
     try {
-      // Prefix data with _ to indicate it's unused
-      const { data: _data, error: signInError } = await supabase.auth.signInWithPassword({
+      // Remove the unused _data variable from destructuring
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email, // Use email state
         password: password,
       });
