@@ -1,5 +1,5 @@
   import { Box, Flex, Text, TextField } from '@radix-ui/themes';
-import { MagnifyingGlassIcon, BackpackIcon } from '@radix-ui/react-icons';
+import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import type { Dispatch, SetStateAction } from 'react'; // Import types
 import { useCart } from '@/context/CartContext'; // Import useCart
 import Link from 'next/link';
