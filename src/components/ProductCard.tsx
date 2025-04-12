@@ -212,7 +212,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </Flex>
               </>
             ) : (
-              <Flex align="center" gap="1"> {/* Use string "2" */}
+              <Flex align="center" gap="1" > {/* Use string "2" */}
                 <Text size="1" style={{ width: '52px' }}>Unidades</Text> {/* Fixed width for alignment */}
                 <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('units', -1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><MinusIcon /></IconButton>
                 <TextField.Root
@@ -237,7 +237,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </Text>
           {/* Display total price if greater than 0 */}
           {totalPrice > 0 && (
-            <Text size="3" weight="bold" color="green" align="right"> {/* Increased size and added color */}
+            <Text size="2" weight="bold" color="green" align="right"> {/* Increased size and added color */}
               ${totalPrice.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           )}
@@ -258,7 +258,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             size="2"
             variant="solid"
             // Apply classes conditionally based on state, adding the animation class
-            className={clsx('btn-animated', { // Added 'btn-animated'
+            className={clsx('btn-animated',  { // Added 'btn-animated'
               'button-comprar': !isInCart, // Default orange state
               'button-modificar': isInCart && isModified, // Blue state
               'button-comprado': isInCart && !isModified, // Green state

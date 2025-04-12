@@ -75,7 +75,7 @@ export default function ProductGrid({ selectedCategory, searchTerm }: ProductGri
     : searchedProducts.filter(product => product.category === selectedCategory);
 
   if (loading) {
-    return <Flex justify="center" p="4"><Text>Cargando productos...</Text></Flex>;
+    return <Flex justify="center" p="4"><Text className='pt-8'>Cargando productos...</Text></Flex>;
   }
 
   if (error) {
@@ -83,11 +83,11 @@ export default function ProductGrid({ selectedCategory, searchTerm }: ProductGri
   }
 
   if (filteredProducts.length === 0) {
-      return <Flex justify="center" p="4"><Text>No se encontraron productos.</Text></Flex>;
+      return <Flex justify="center" p="4"><Text className='pt-8'>No se encontraron productos.</Text></Flex>;
   }
 
   return (
-    <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="4" width="auto">
+    <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="3" width="auto">
       {filteredProducts.map((product) => (
         // Ensure the product passed to ProductCard matches its expected props
         <ProductCard key={product.id} product={{
