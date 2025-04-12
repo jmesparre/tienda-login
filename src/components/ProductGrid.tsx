@@ -23,6 +23,7 @@ const placeholderProducts: Product[] = [
   { id: 8, name: 'Lavandina', category: 'Limpieza', price: 900, imageUrl: '', unitType: 'unit' }, // Unit based
   // Add a 'Bebidas' example
   { id: 9, name: 'Gaseosa 2L', category: 'Bebidas', price: 1500, imageUrl: '', unitType: 'unit' }, // Unit based
+  { id: 10, name: 'Gaseosa 1L', category: 'Bebidas', price: 800, imageUrl: '', unitType: 'unit' }, // Unit based
 ];
 
 interface ProductGridProps {

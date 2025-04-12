@@ -166,7 +166,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const totalPrice = calculateTotalPrice();
 
   return (
-    <Card size="2">
+    <Card size="2" className="bg-[#FFFBF5] border border-[#EAE0CC]"> {/* Added background and border */}
       {/* Main Flex container for the card content */}
       <Flex gap="4" align="start"> {/* Use string "4" */}
         {/* Image Box (Left) */}
@@ -186,41 +186,44 @@ export default function ProductCard({ product }: ProductCardProps) {
               <>
                 <Flex align="center" gap="2"> {/* Use string "2" */}
                   <Text size="1" style={{ width: '50px' }}>Kilos</Text> {/* Fixed width for alignment */}
-                  <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('kg', -1)}><MinusIcon /></IconButton>
+                  <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('kg', -1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><MinusIcon /></IconButton>
                   <TextField.Root
                     size="1"
                     type="number" // Use number type for better input handling
+                    className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
                     value={String(quantityKg)} // Bind value to state
                     onChange={(e) => setQuantityKg(parseInt(e.target.value, 10) || 0)} // Update state on change
                     style={{ width: '40px', textAlign: 'center' }}
                   />
-                  <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('kg', 1)}><PlusIcon /></IconButton>
+                  <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('kg', 1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><PlusIcon /></IconButton>
                 </Flex>
                 <Flex align="center" gap="2"> {/* Use string "2" */}
                   <Text size="1" style={{ width: '50px' }}>Gramos</Text> {/* Fixed width for alignment */}
-                  <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('grams', -1)}><MinusIcon /></IconButton>
+                  <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('grams', -1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><MinusIcon /></IconButton>
                   <TextField.Root
                     size="1"
                     type="number"
+                    className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
                     value={String(quantityGrams)} // Bind value to state
                     onChange={(e) => setQuantityGrams(parseInt(e.target.value, 10) || 0)} // Update state on change
                     style={{ width: '40px', textAlign: 'center' }}
                   />
-                  <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('grams', 1)}><PlusIcon /></IconButton>
+                  <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('grams', 1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><PlusIcon /></IconButton>
                 </Flex>
               </>
             ) : (
               <Flex align="center" gap="2"> {/* Use string "2" */}
                 <Text size="1" style={{ width: '50px' }}>Unidades</Text> {/* Fixed width for alignment */}
-                <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('units', -1)}><MinusIcon /></IconButton>
+                <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('units', -1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><MinusIcon /></IconButton>
                 <TextField.Root
                   size="1"
                   type="number"
+                  className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
                   value={String(quantityUnits)} // Bind value to state
                   onChange={(e) => setQuantityUnits(parseInt(e.target.value, 10) || 0)} // Update state on change
                   style={{ width: '40px', textAlign: 'center' }}
                  />
-                <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('units', 1)}><PlusIcon /></IconButton>
+                <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('units', 1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><PlusIcon /></IconButton>
               </Flex>
             )}
           </Flex>
@@ -254,16 +257,16 @@ export default function ProductCard({ product }: ProductCardProps) {
           <Button
             size="2"
             variant="solid"
-            // Apply green color only when 'Comprado' (in cart, not modified)
-            color={isInCart && !isModified ? 'green' : undefined}
-            // Add specific class for 'Modificar' state
-            className={clsx({
-              'button-dark-green': isInCart && isModified,
+            // Apply classes conditionally based on state, adding the animation class
+            className={clsx('btn-animated', { // Added 'btn-animated'
+              'button-comprar': !isInCart, // Default orange state
+              'button-modificar': isInCart && isModified, // Blue state
+              'button-comprado': isInCart && !isModified, // Green state
             })}
-            onClick={handleAddToCart}
-            mt="auto"
-          >
-            {isInCart ? (isModified ? 'Modificar' : 'Comprado') : 'Comprar'}
+             onClick={handleAddToCart}
+             // mt="auto" // Removed to test visibility
+           >
+             {isInCart ? (isModified ? 'Modificar' : 'Comprado') : 'Comprar'}
           </Button>
         </Flex>
       </Flex>

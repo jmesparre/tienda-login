@@ -30,16 +30,10 @@ export default function CategoryFilters({ selectedCategory, onSelectCategory }: 
             size="2"
             onClick={() => onSelectCategory(category)}
             className={clsx(
-              'pb-1 border-b-2 transition-colors duration-150', // Base styles: padding-bottom, border, transition
-              isActive
-                ? borderColorClass // Active color border
-                : 'border-transparent hover:' + borderColorClass // Transparent border normally, colored on hover
+              // Removed border classes 'pb-1 border-b-2 border-[#D9534F]' and 'border-transparent'
+              'transition-colors duration-150' // Kept transition for potential future hover effects
             )}
-            style={{
-              // Ensure text color remains consistent or changes as desired
-              color: isActive ? `var(--${categoryColorMap[category]?.split('-')[1]}-9)` : 'var(--gray-11)', // Example: Use Radix color variable based on Tailwind class
-              // Radix Button ghost variant might override hover text color, adjust if needed
-            }}
+            // Style attribute was already removed
           >
             {category}
           </Button>

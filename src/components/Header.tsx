@@ -13,7 +13,7 @@ export default function Header({ searchTerm, onSearchTermChange }: HeaderProps) 
   const totalItems = getCartTotalItems(); // Calculate total items
 
   return (
-    <Flex align="center" justify="between" gap="4" p="4" style={{ borderBottom: '1px solid var(--gray-a6)' }}>
+    <Flex align="center" justify="between" gap="4" p="4"> {/* Removed borderBottom style */}
       {/* Logo Placeholder */}
       <Box>
         <Text size="5" weight="bold">La Vieja Estacion</Text>
@@ -25,6 +25,7 @@ export default function Header({ searchTerm, onSearchTermChange }: HeaderProps) 
           placeholder="Buscar productos…"
           size="3"
           value={searchTerm}
+          className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
           onChange={(e) => onSearchTermChange(e.target.value)} // Update state on change
         >
           <TextField.Slot>
