@@ -11,9 +11,11 @@ import {
   Select,
   IconButton,
   Link,
-  Text // Added Text
+  Text, // Re-added Text
+  Dialog, // Added Dialog
+  TextArea // Added TextArea for potential description field later
 } from '@radix-ui/themes';
-import { Cross1Icon, Pencil1Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons'; // Added MagnifyingGlassIcon
+import { Cross1Icon, Pencil1Icon, MagnifyingGlassIcon, PlusIcon } from '@radix-ui/react-icons'; // Added MagnifyingGlassIcon and PlusIcon
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -56,10 +58,42 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [activeCategory, setActiveCategory] = useState('Todo');
   // State for search term
   const [searchTerm, setSearchTerm] = useState('');
-  // State for sorting
-  const [sortOrder, setSortOrder] = useState('default');
+// State for sorting
+const [sortOrder, setSortOrder] = useState('default');
+// State for Add Product Modal
+const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+// State for new product form
+const [newProduct, setNewProduct] = useState({
+  name: '',
+  category: categories[1], // Default to first actual category
+  price: '',
+  unit: 'kg',
+  promotionPrice: '',
+});
 
-  // TODO: Implement filtering and sorting logic based on state
+// TODO: Implement filtering and sorting logic based on state
+
+const handleNewProductChange = (field: keyof typeof newProduct, value: string) => {
+  setNewProduct(prev => ({ ...prev, [field]: value }));
+};
+
+const handleSaveNewProduct = () => {
+  console.log('Saving new product:', newProduct);
+  // TODO: Add actual save logic (e.g., API call, update state)
+  // Example: Add to local state for now
+  const productToAdd = {
+      id: Date.now(), // Temporary ID
+      name: newProduct.name,
+      category: newProduct.category,
+      price: parseFloat(newProduct.price) || 0,
+      unit: newProduct.unit as 'kg' | 'c/u', // Type assertion might be needed
+      promotionPrice: newProduct.promotionPrice ? parseFloat(newProduct.promotionPrice) : null,
+  };
+  setProducts(prev => [...prev, productToAdd]);
+  setIsAddModalOpen(false); // Close modal
+  // Reset form
+  setNewProduct({ name: '', category: categories[1], price: '', unit: 'kg', promotionPrice: '' });
+};
 
   return (
     <Box p="4">
@@ -103,12 +137,101 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         ))}
       </Flex>
 
-      {/* Action Bar */}
+      {/* Action Bar & Add Product Modal */}
       <Flex justify="end" align="center" mb="4" gap="4" px="3">
-         <Button onClick={handleAddProduct} size="2">
-           Agregar Producto
-         </Button>
-         <Select.Root value={sortOrder} onValueChange={setSortOrder} size="2">
+        <Dialog.Root open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+          <Dialog.Trigger>
+            <Button size="2">
+              <PlusIcon /> Agregar Producto
+            </Button>
+          </Dialog.Trigger>
+          <Dialog.Content style={{ maxWidth: 450 }}>
+            <Dialog.Title>Agregar Nuevo Producto</Dialog.Title>
+            <Dialog.Description size="2" mb="4">
+              Complete los detalles del nuevo producto.
+            </Dialog.Description>
+
+            <Flex direction="column" gap="3">
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Nombre
+                </Text>
+                <TextField.Root
+                  placeholder="Ej: Manzana Roja"
+                  value={newProduct.name}
+                  onChange={(e) => handleNewProductChange('name', e.target.value)}
+                />
+              </label>
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Categoría
+                </Text>
+                <Select.Root
+                  value={newProduct.category}
+                  onValueChange={(value) => handleNewProductChange('category', value)}
+                >
+                  <Select.Trigger placeholder="Seleccionar categoría..." />
+                  <Select.Content>
+                    {categories.filter(c => c !== 'Todo').map(cat => (
+                      <Select.Item key={cat} value={cat}>{cat}</Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </label>
+              <Flex gap="3">
+                 <label style={{ flexGrow: 1 }}>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      Precio
+                    </Text>
+                    <TextField.Root
+                      type="number"
+                      placeholder="Ej: 1500.00"
+                      value={newProduct.price}
+                      onChange={(e) => handleNewProductChange('price', e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      Unidad
+                    </Text>
+                    <Select.Root
+                      value={newProduct.unit}
+                      onValueChange={(value) => handleNewProductChange('unit', value)}
+                    >
+                      <Select.Trigger placeholder="Unidad" />
+                      <Select.Content>
+                        <Select.Item value="kg">kg</Select.Item>
+                        <Select.Item value="c/u">c/u</Select.Item>
+                        {/* Add other units */}
+                      </Select.Content>
+                    </Select.Root>
+                  </label>
+              </Flex>
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Precio Promocional (Opcional)
+                </Text>
+                <TextField.Root
+                  type="number"
+                  placeholder="Ej: 1200.00"
+                  value={newProduct.promotionPrice}
+                  onChange={(e) => handleNewProductChange('promotionPrice', e.target.value)}
+                />
+              </label>
+            </Flex>
+
+            <Flex gap="3" mt="4" justify="end">
+              <Dialog.Close>
+                <Button variant="soft" color="gray">
+                  Cancelar
+                </Button>
+              </Dialog.Close>
+              <Button onClick={handleSaveNewProduct}>Guardar Producto</Button>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
+
+        <Select.Root value={sortOrder} onValueChange={setSortOrder} size="2">
             <Select.Trigger placeholder="Filtros" />
             <Select.Content>
               <Select.Item value="default">Ordenar por defecto</Select.Item>

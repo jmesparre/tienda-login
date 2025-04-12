@@ -20,8 +20,7 @@ export default function CategoryFilters({ selectedCategory, onSelectCategory }: 
     // Remove the bottom border from the Flex container
     <Flex wrap="wrap" gap="3" px="4" py="3"> {/* Adjusted padding/gap */}
       {categories.map((category) => {
-        const isActive = selectedCategory === category;
-        const borderColorClass = categoryColorMap[category] || 'border-transparent'; // Fallback to transparent
+        // Removed unused isActive and borderColorClass variables
 
         return (
           <Button
