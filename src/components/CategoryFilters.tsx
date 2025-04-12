@@ -5,7 +5,7 @@ import clsx from 'clsx'; // Utility for conditionally joining class names
 
 const categories = [
   'Todo', 'Frutas', 'Verdura', 'Carniceria',
-  'Fiambreria', 'Almacen', 'Limpieza', 'Bebidas'
+  'Fiambreria', 'Almacén', 'Limpieza', 'Bebidas'
 ];
 
 // Removed local categoryColorMap definition

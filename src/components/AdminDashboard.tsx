@@ -38,7 +38,7 @@ interface Product {
 // Removed exampleProducts
 
 // Example categories based on wireframe
-const categories = ['Todo', 'Frutas', 'Verdura', 'Carniceria', 'Fiambreria', 'Almacen', 'Limpieza', 'Bebidas'];
+const categories = ['Todo', 'Frutas', 'Verdura', 'Carniceria', 'Fiambreria', 'Almacén', 'Limpieza', 'Bebidas'];
 
 // Define available images from public folder (excluding SVGs and directories)
 const availableImages = ['/banana.png', '/aji-picante.png', '/berenjena.png', '/calabaza.png', '/cebolla.png', '/lechuga.png', '/manteca.png', '/manzana.png', '/morron.png', '/papa.png', '/pepino.png', '/pollo.png', '/queso.png', '/remolacha.png', '/uvas.png', '/cigarrillos.png', '/lata-cerveza.png', '/carne.png', '/milanesas.png']; // Added this line

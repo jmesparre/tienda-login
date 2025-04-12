@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
 // Define the structure for an item in the cart
 interface CartItem {
@@ -37,6 +37,39 @@ interface CartProviderProps {
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false); // State for sidebar visibility
+
+  // Load cart from localStorage on initial mount
+  useEffect(() => {
+    try {
+      const storedCart = localStorage.getItem('laViejaEstacionCart');
+      if (storedCart) {
+        const parsedCart = JSON.parse(storedCart);
+        // Basic validation: check if it's an array
+        if (Array.isArray(parsedCart)) {
+          setCartItems(parsedCart);
+        } else {
+          console.error("Stored cart data is not an array:", parsedCart);
+          localStorage.removeItem('laViejaEstacionCart'); // Clear invalid data
+        }
+      }
+    } catch (error) {
+      console.error("Failed to parse cart from localStorage:", error);
+      localStorage.removeItem('laViejaEstacionCart'); // Clear corrupted data
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    // Avoid saving the initial empty array before loading from storage
+    // Only save if cartItems has items OR if there was something previously in storage (to handle clearing the cart)
+    if (cartItems.length > 0 || localStorage.getItem('laViejaEstacionCart') !== null) {
+       try {
+         localStorage.setItem('laViejaEstacionCart', JSON.stringify(cartItems));
+       } catch (error) {
+         console.error("Failed to save cart to localStorage:", error);
+       }
+    }
+  }, [cartItems]); // Dependency array ensures this runs whenever cartItems changes
 
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
