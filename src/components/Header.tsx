@@ -16,7 +16,7 @@ export default function Header({ searchTerm, onSearchTermChange }: HeaderProps) 
     <Flex align="center" justify="between" gap="4" p="4"> {/* Removed borderBottom style */}
       {/* Logo Placeholder */}
       <Box>
-        <Text size="5" weight="bold">La Vieja Estacion</Text>
+        <img src="/logo.png" alt="Logo La Vieja Estación" width="140" height="140" align="left"></img>
       </Box>
 
       {/* Search Bar */}
