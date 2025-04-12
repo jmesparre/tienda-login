@@ -16,7 +16,9 @@ export default function Header({ searchTerm, onSearchTermChange }: HeaderProps) 
     <Flex align="center" justify="between" gap="4" p="4"> {/* Removed borderBottom style */}
       {/* Logo Placeholder */}
       <Box>
-        <img src="/logo.png" alt="Logo La Vieja Estación" width="140" height="140" align="left"></img>
+        <a rel="stylesheet" href="/">
+          <img src="/logo.png" alt="Logo La Vieja Estación" width="140" height="140" align="left"></img>
+        </a>
       </Box>
 
       {/* Search Bar */}
@@ -37,8 +39,8 @@ export default function Header({ searchTerm, onSearchTermChange }: HeaderProps) 
       {/* Cart Section - Make clickable */}
       <Box onClick={openCart} style={{ cursor: 'pointer' }}> {/* Add onClick and pointer */}
         <Flex align="center" gap="2">
-          <BackpackIcon height="20" width="20" />
-          <Text>Carrito ({totalItems})</Text> {/* Display dynamic count */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" ><path d="m15 11-1 9"/><path d="m19 11-4-7"/><path d="M2 11h20"/><path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4"/><path d="M4.5 15.5h15"/><path d="m5 11 4-7"/><path d="m9 11 1 9"/></svg>
+          <Text>Canasto ({totalItems})</Text> {/* Display dynamic count */}
         </Flex>
       </Box>
     </Flex>

@@ -55,7 +55,7 @@ export default function CartSidebar() {
           // Keep original sidebar styles
           width: '350px',
           height: '100%', // Ensure full height within overlay flex container
-          backgroundColor: 'var(--gray-1)',
+          backgroundColor: '#fff6d6ff',
           boxShadow: '-2px 0 5px rgba(0,0,0,0.1)',
           zIndex: 1000, // Above overlay
           display: 'flex',

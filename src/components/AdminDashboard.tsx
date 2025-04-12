@@ -41,7 +41,7 @@ interface Product {
 const categories = ['Todo', 'Frutas', 'Verdura', 'Carniceria', 'Fiambreria', 'Almacen', 'Limpieza', 'Bebidas'];
 
 // Define available images from public folder (excluding SVGs and directories)
-const availableImages = ['/banana.png', '/aji-picante.png', '/berenjena.png', '/calabaza.png', '/cebolla.png', '/lechuga.png', '/manteca.png', '/manzana.png', '/morron.png', '/papa.png', '/pepino.png', '/pollo.png', '/queso.png', '/remolacha.png', '/uvas.png']; // Added this line
+const availableImages = ['/banana.png', '/aji-picante.png', '/berenjena.png', '/calabaza.png', '/cebolla.png', '/lechuga.png', '/manteca.png', '/manzana.png', '/morron.png', '/papa.png', '/pepino.png', '/pollo.png', '/queso.png', '/remolacha.png', '/uvas.png', '/cigarrillos.png', '/lata-cerveza.png', '/carne.png', '/milanesas.png']; // Added this line
 
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [products, setProducts] = useState<Product[]>([]); // Initialize with empty array

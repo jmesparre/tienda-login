@@ -26,7 +26,8 @@ export default function CategoryFilters({ onSelectCategory }: CategoryFiltersPro
           <Button
             key={category}
             variant="ghost" // Remove background
-            size="2"
+            size="3"
+            color="gray"
             onClick={() => onSelectCategory(category)}
             className={clsx(
               // Removed border classes 'pb-1 border-b-2 border-[#D9534F]' and 'border-transparent'
