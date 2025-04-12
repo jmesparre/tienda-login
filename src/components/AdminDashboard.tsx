@@ -12,8 +12,8 @@ import {
   IconButton,
   Link,
   Text, // Re-added Text
-  Dialog, // Added Dialog
-  TextArea // Added TextArea for potential description field later
+  Dialog // Added Dialog
+  // Removed unused TextArea import
 } from '@radix-ui/themes';
 import { Cross1Icon, Pencil1Icon, MagnifyingGlassIcon, PlusIcon } from '@radix-ui/react-icons'; // Added MagnifyingGlassIcon and PlusIcon
 
@@ -38,11 +38,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [products, setProducts] = useState(exampleProducts);
 
   // Placeholder functions for actions (implement later)
-  const handleAddProduct = () => {
-    console.log('Add Product clicked');
-    // Logic to open a modal or navigate to an add product page
-  };
-
+  // Removed unused handleAddProduct function
   const handleEditProduct = (productId: number) => {
     console.log('Edit Product clicked:', productId);
     // Logic to open an edit modal or page for the product

@@ -1,7 +1,7 @@
 import { Flex, Button } from '@radix-ui/themes';
 import type { Dispatch, SetStateAction } from 'react';
 import clsx from 'clsx'; // Utility for conditionally joining class names
-import { categoryColorMap } from '@/lib/utils'; // Import the centralized map
+// Removed unused categoryColorMap import
 
 const categories = [
   'Todo', 'Frutas', 'Verdura', 'Carniceria',
@@ -11,11 +11,11 @@ const categories = [
 // Removed local categoryColorMap definition
 
 interface CategoryFiltersProps {
-  selectedCategory: string;
+  // Removed unused selectedCategory prop
   onSelectCategory: Dispatch<SetStateAction<string>>;
 }
 
-export default function CategoryFilters({ selectedCategory, onSelectCategory }: CategoryFiltersProps) {
+export default function CategoryFilters({ onSelectCategory }: CategoryFiltersProps) { // Removed selectedCategory from destructuring
   return (
     // Remove the bottom border from the Flex container
     <Flex wrap="wrap" gap="3" px="4" py="3"> {/* Adjusted padding/gap */}

@@ -14,9 +14,8 @@ export default function Home() {
     <main>
       <Header searchTerm={searchTerm} onSearchTermChange={setSearchTerm} /> {/* Pass search state */}
       <CategoryFilters
-        selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
-      /> {/* Pass category state and handler */}
+      /> {/* Pass category state and handler, removed selectedCategory prop */}
       <Flex direction="column" gap="4" p="4">
         <ProductGrid selectedCategory={selectedCategory} searchTerm={searchTerm} /> {/* Pass selected category and search term */}
       </Flex>
