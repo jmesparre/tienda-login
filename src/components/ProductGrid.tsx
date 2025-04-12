@@ -51,7 +51,7 @@ export default function ProductGrid({ selectedCategory, searchTerm }: ProductGri
         })) || [];
 
         setProducts(mappedData);
-      } catch (err: any) {
+      } catch (err: unknown) { // Use unknown instead of any
         console.error("Error fetching products:", err);
         setError("Error al cargar los productos. Intente de nuevo.");
       } finally {

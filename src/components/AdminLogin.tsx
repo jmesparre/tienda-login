@@ -20,7 +20,8 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
     setLoading(true); // Set loading
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      // Prefix data with _ to indicate it's unused
+      const { data: _data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email, // Use email state
         password: password,
       });
@@ -35,10 +36,11 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
       // but the session check in AdminPage is the primary mechanism now.
       onLoginSuccess();
 
-    } catch (err: any) {
+    } catch (err: unknown) { // Use unknown instead of any
       console.error("Login error:", err);
       // Provide more specific error messages if possible
-      if (err.message.includes('Invalid login credentials')) {
+      // Check if err is an Error instance before accessing message
+      if (err instanceof Error && err.message.includes('Invalid login credentials')) {
         setError('Email o contraseña incorrectos.');
       } else {
         setError('Ocurrió un error durante el inicio de sesión.');

@@ -75,7 +75,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       })) || [];
 
       setProducts(mappedData);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching products:", err);
       setError("Error al cargar los productos.");
     } finally {
@@ -122,7 +122,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
          // Or optimistically remove from local state:
          // setProducts(prevProducts => prevProducts.filter(p => p.id !== productId));
 
-     } catch (err: any) {
+     } catch (err: unknown) {
          console.error("Error deleting product:", err);
          setError("Error al eliminar el producto.");
          // Consider showing a user-friendly error message (e.g., using a toast notification)
@@ -197,7 +197,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       // Refresh the product list
       fetchProducts();
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error saving product:", err);
       setError("Error al guardar el producto.");
       // Keep modal open or provide feedback
@@ -248,7 +248,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setEditingProduct(null); // Clear editing state
       fetchProducts(); // Refresh the product list to show changes
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error updating product:", err);
       setError("Error al actualizar el producto.");
       // Keep modal open or provide specific feedback
@@ -612,12 +612,13 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             <Table.Row key={product.id} align="center">
               {/* Image Cell */}
               <Table.Cell>
-                <img
+                {/* Use next/image for optimization */}
+                <Image
                   src={product.imageUrl || '/placeholder-image.jpg'} // Use product image or placeholder
                   alt={product.name}
-                  width={40}
+                  width={40} // Keep width and height for layout
                   height={40}
-                  style={{ objectFit: 'cover', borderRadius: '4px' }}
+                  style={{ objectFit: 'cover', borderRadius: '4px' }} // Style remains the same
                 />
               </Table.Cell>
               <Table.RowHeaderCell>{product.name}</Table.RowHeaderCell>
