@@ -2,6 +2,8 @@
 import { MagnifyingGlassIcon, BackpackIcon } from '@radix-ui/react-icons';
 import type { Dispatch, SetStateAction } from 'react'; // Import types
 import { useCart } from '@/context/CartContext'; // Import useCart
+import Link from 'next/link';
+import Image from 'next/image';
 
 interface HeaderProps {
   searchTerm: string;
@@ -16,9 +18,15 @@ export default function Header({ searchTerm, onSearchTermChange }: HeaderProps) 
     <Flex align="center" justify="between" gap="4" p="4"> {/* Removed borderBottom style */}
       {/* Logo Placeholder */}
       <Box>
-        <a rel="stylesheet" href="/">
-          <img src="/logo.png" alt="Logo La Vieja Estación" width="140" height="140" align="left"></img>
-        </a>
+      <Link href="/">
+        <Image
+          src="/logo.png"
+          alt="Logo La Vieja Estación"
+          width={140}
+          height={140}
+          style={{ display: 'inline-block' }} //Para que el width y height funcionen correctamente.  También puede ser flex.
+        />
+      </Link>
       </Box>
 
       {/* Search Bar */}
