@@ -168,15 +168,15 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Card size="2" className="bg-[#FFFBF5] border border-[#EAE0CC]"> {/* Added background and border */}
       {/* Main Flex container for the card content */}
-      <Flex gap="4" align="start"> {/* Use string "4" */}
+      <Flex gap="2" align="start"> {/* Use string "4" */}
         {/* Image Box (Left) */}
-        <Box width="80px" height="80px" flexShrink="0" style={{ aspectRatio: '1 / 1', background: '#eee', borderRadius: 'var(--radius-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}> {/* Use string "0" */}
-          {/* Using apple-small.jpg as temporary image */}
-          <Image src="/apple-small.jpg" alt={product.name} width={80} height={80} style={{ objectFit: 'cover', borderRadius: 'var(--radius-2)' }} />
+        <Box width="80px" height="80px" flexShrink="0" style={{ aspectRatio: '1 / 1', width: 'auto', height: 'auto', background: 'transparent', borderRadius: 'var(--radius-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}> {/* Use string "0" */}
+          {/* Use product image URL or placeholder */}
+          <Image src={product.imageUrl || '/placeholder-image.jpg'} alt={product.name} width={80} height={80} style={{ objectFit: 'cover', borderRadius: 'var(--radius-2)' }} />
         </Box>
 
         {/* Center Column: Info + Quantity */}
-        <Flex direction="column" flexGrow="1" gap="2"> {/* Use string "2" */}
+        <Flex direction="column" flexGrow="1" gap="1"> {/* Use string "2" */}
           <Text size="3" weight="bold">{product.name}</Text>
           <Text size="1" color="gray">{product.category}</Text>
 
@@ -184,8 +184,8 @@ export default function ProductCard({ product }: ProductCardProps) {
           <Flex direction="column" gap="1" mt="1"> {/* Use strings "1" */}
             {product.unitType === 'kg' ? (
               <>
-                <Flex align="center" gap="2"> {/* Use string "2" */}
-                  <Text size="1" style={{ width: '50px' }}>Kilos</Text> {/* Fixed width for alignment */}
+                <Flex align="center" gap="1"> {/* Use string "2" */}
+                  <Text size="1" style={{ width: '52px' }}>Kilos</Text> {/* Fixed width for alignment */}
                   <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('kg', -1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><MinusIcon /></IconButton>
                   <TextField.Root
                     size="1"
@@ -193,12 +193,12 @@ export default function ProductCard({ product }: ProductCardProps) {
                     className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
                     value={String(quantityKg)} // Bind value to state
                     onChange={(e) => setQuantityKg(parseInt(e.target.value, 10) || 0)} // Update state on change
-                    style={{ width: '40px', textAlign: 'center' }}
+                    style={{ width: '37px', textAlign: 'center' }}
                   />
                   <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('kg', 1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><PlusIcon /></IconButton>
                 </Flex>
-                <Flex align="center" gap="2"> {/* Use string "2" */}
-                  <Text size="1" style={{ width: '50px' }}>Gramos</Text> {/* Fixed width for alignment */}
+                <Flex align="center" gap="1"> {/* Use string "2" */}
+                  <Text size="1" style={{ width: '52px' }}>Gramos</Text> {/* Fixed width for alignment */}
                   <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('grams', -1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><MinusIcon /></IconButton>
                   <TextField.Root
                     size="1"
@@ -206,14 +206,14 @@ export default function ProductCard({ product }: ProductCardProps) {
                     className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
                     value={String(quantityGrams)} // Bind value to state
                     onChange={(e) => setQuantityGrams(parseInt(e.target.value, 10) || 0)} // Update state on change
-                    style={{ width: '40px', textAlign: 'center' }}
+                    style={{ width: '37px', textAlign: 'center' }}
                   />
                   <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('grams', 1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><PlusIcon /></IconButton>
                 </Flex>
               </>
             ) : (
-              <Flex align="center" gap="2"> {/* Use string "2" */}
-                <Text size="1" style={{ width: '50px' }}>Unidades</Text> {/* Fixed width for alignment */}
+              <Flex align="center" gap="1"> {/* Use string "2" */}
+                <Text size="1" style={{ width: '52px' }}>Unidades</Text> {/* Fixed width for alignment */}
                 <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('units', -1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><MinusIcon /></IconButton>
                 <TextField.Root
                   size="1"

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { supabase } from '@/lib/supabaseClient'; // Import supabase
 import { Button, TextField, Flex, Card, Text, Heading } from '@radix-ui/themes';
 
 interface AdminLoginProps {
@@ -8,19 +9,42 @@ interface AdminLoginProps {
 }
 
 export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState(''); // Changed from username to email
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // Add loading state
 
-  const handleLogin = (event: React.FormEvent) => {
+  const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault(); // Prevent default form submission
     setError(''); // Clear previous errors
+    setLoading(true); // Set loading
 
-    // Hardcoded credentials check
-    if (username === 'admin' && password === 'telescopio1500') {
-      onLoginSuccess(); // Call the success handler passed from the parent
-    } else {
-      setError('Usuario o contraseña incorrectos.');
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email, // Use email state
+        password: password,
+      });
+
+      if (signInError) {
+        throw signInError;
+      }
+
+      // If login is successful, Supabase handles the session.
+      // The onAuthStateChange listener in AdminPage will update the UI.
+      // We can still call onLoginSuccess if needed for immediate UI feedback,
+      // but the session check in AdminPage is the primary mechanism now.
+      onLoginSuccess();
+
+    } catch (err: any) {
+      console.error("Login error:", err);
+      // Provide more specific error messages if possible
+      if (err.message.includes('Invalid login credentials')) {
+        setError('Email o contraseña incorrectos.');
+      } else {
+        setError('Ocurrió un error durante el inicio de sesión.');
+      }
+    } finally {
+      setLoading(false); // Reset loading state
     }
   };
 
@@ -34,12 +58,13 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           <Flex direction="column" gap="3">
             <label>
               <Text as="div" size="2" mb="1" weight="bold">
-                Usuario
+                Email
               </Text>
               <TextField.Root
-                placeholder="Ingrese su usuario"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email" // Set input type to email
+                placeholder="Ingrese su email"
+                value={email} // Use email state
+                onChange={(e) => setEmail(e.target.value)} // Update email state
                 required // Basic HTML5 validation
               />
             </label>
@@ -62,8 +87,8 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
               </Text>
             )}
 
-            <Button type="submit" size="3" mt="4">
-              Ingresar
+            <Button type="submit" size="3" mt="4" disabled={loading}>
+              {loading ? 'Ingresando...' : 'Ingresar'}
             </Button>
           </Flex>
         </form>

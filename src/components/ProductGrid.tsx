@@ -1,5 +1,7 @@
-import { Grid } from '@radix-ui/themes';
+import { useState, useEffect } from 'react'; // Import hooks
+import { Grid, Text, Flex } from '@radix-ui/themes'; // Add Text, Flex for loading/error
 import ProductCard from './ProductCard';
+import { supabase } from '@/lib/supabaseClient'; // Import supabase client
 
 // Define the structure of a product
 interface Product {
@@ -7,24 +9,12 @@ interface Product {
   name: string;
   category: string;
   price: number;
-  imageUrl: string;
+  imageUrl: string | null; // Allow null from DB
   unitType: 'kg' | 'unit'; // Add unit type
+  promotionPrice?: number | null; // Add optional promotion price
 }
 
-// Placeholder product data - replace with actual data source later
-const placeholderProducts: Product[] = [
-  { id: 1, name: 'Banana', category: 'Frutas', price: 2000, imageUrl: '', unitType: 'kg' },
-  { id: 2, name: 'Manzana', category: 'Frutas', price: 1800, imageUrl: '', unitType: 'kg' },
-  { id: 3, name: 'Lechuga', category: 'Verdura', price: 1500, imageUrl: '', unitType: 'kg' },
-  { id: 4, name: 'Tomate', category: 'Verdura', price: 1600, imageUrl: '', unitType: 'kg' },
-  { id: 5, name: 'Pollo', category: 'Carniceria', price: 3500, imageUrl: '', unitType: 'kg' },
-  { id: 6, name: 'Queso', category: 'Fiambreria', price: 4000, imageUrl: '', unitType: 'kg' },
-  { id: 7, name: 'Pan Lactal', category: 'Almacen', price: 1200, imageUrl: '', unitType: 'unit' }, // Unit based
-  { id: 8, name: 'Lavandina', category: 'Limpieza', price: 900, imageUrl: '', unitType: 'unit' }, // Unit based
-  // Add a 'Bebidas' example
-  { id: 9, name: 'Gaseosa 2L', category: 'Bebidas', price: 1500, imageUrl: '', unitType: 'unit' }, // Unit based
-  { id: 10, name: 'Gaseosa 1L', category: 'Bebidas', price: 800, imageUrl: '', unitType: 'unit' }, // Unit based
-];
+// Removed placeholder product data
 
 interface ProductGridProps {
   selectedCategory: string;
@@ -32,22 +22,78 @@ interface ProductGridProps {
 }
 
 export default function ProductGrid({ selectedCategory, searchTerm }: ProductGridProps) {
-  // Apply search filter first to all products (case-insensitive)
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: dbError } = await supabase
+          .from('products')
+          .select('*'); // Fetch all columns
+
+        if (dbError) {
+          throw dbError;
+        }
+
+        // Map snake_case from DB to camelCase for the component
+        const mappedData = data?.map(p => ({
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          price: p.price,
+          imageUrl: p.image_url, // Map image_url
+          unitType: p.unit_type, // Map unit_type
+          promotionPrice: p.promotion_price // Map promotion_price
+        })) || [];
+
+        setProducts(mappedData);
+      } catch (err: any) {
+        console.error("Error fetching products:", err);
+        setError("Error al cargar los productos. Intente de nuevo.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []); // Empty dependency array means this runs once on mount
+
+  // Apply search filter first (case-insensitive)
   const searchedProducts = searchTerm
-    ? placeholderProducts.filter(product =>
+    ? products.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : placeholderProducts;
+    : products;
 
-  // Then, apply category filter to the search results
+  // Then, apply category filter
   const filteredProducts = selectedCategory === 'Todo'
     ? searchedProducts
     : searchedProducts.filter(product => product.category === selectedCategory);
 
+  if (loading) {
+    return <Flex justify="center" p="4"><Text>Cargando productos...</Text></Flex>;
+  }
+
+  if (error) {
+    return <Flex justify="center" p="4"><Text color="red">{error}</Text></Flex>;
+  }
+
+  if (filteredProducts.length === 0) {
+      return <Flex justify="center" p="4"><Text>No se encontraron productos.</Text></Flex>;
+  }
+
   return (
     <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="4" width="auto">
       {filteredProducts.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        // Ensure the product passed to ProductCard matches its expected props
+        <ProductCard key={product.id} product={{
+            ...product,
+            imageUrl: product.imageUrl || '/placeholder-image.jpg' // Provide fallback image
+        }} />
       ))}
     </Grid>
   );

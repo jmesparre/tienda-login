@@ -22,7 +22,7 @@ export default function Header({ searchTerm, onSearchTermChange }: HeaderProps) 
       {/* Search Bar */}
       <Box flexGrow="1" maxWidth="400px">
         <TextField.Root
-          placeholder="Buscar productos…"
+          placeholder="Buscar…"
           size="3"
           value={searchTerm}
           className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
