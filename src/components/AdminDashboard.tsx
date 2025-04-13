@@ -18,7 +18,7 @@ import {
   Tooltip // Added Tooltip for icons
   // Removed unused TextArea import
 } from '@radix-ui/themes';
-import { Cross1Icon, Cross2Icon, Pencil1Icon, MagnifyingGlassIcon, PlusIcon, PlayIcon, PauseIcon } from '@radix-ui/react-icons'; // Added Cross2Icon, PlayIcon, PauseIcon
+import { Cross1Icon, Cross2Icon, Pencil1Icon, MagnifyingGlassIcon, PlusIcon, PlayIcon, PauseIcon, CheckIcon } from '@radix-ui/react-icons'; // Added Cross2Icon, PlayIcon, PauseIcon, CheckIcon
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -49,6 +49,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [products, setProducts] = useState<Product[]>([]); // Initialize with empty array
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // State for inline price editing
+  const [editedPrices, setEditedPrices] = useState<Record<number, string>>({});
+  const [modifiedPrices, setModifiedPrices] = useState<Record<number, boolean>>({});
+  const [updatingPriceId, setUpdatingPriceId] = useState<number | null>(null); // State for local loading
+
 
   // --- Fetch Products Function ---
   const fetchProducts = async () => {
@@ -83,6 +88,71 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setError("Error al cargar los productos.");
     } finally {
       setLoading(false);
+     }
+  };
+
+  // --- Handle Inline Price Change ---
+  const handlePriceChange = (productId: number, value: string) => {
+    setEditedPrices(prev => ({ ...prev, [productId]: value }));
+    setModifiedPrices(prev => ({ ...prev, [productId]: true }));
+  };
+
+  // --- Handle Inline Price Save ---
+  const handleUpdatePrice = async (productId: number) => {
+    const newPriceString = editedPrices[productId];
+    if (newPriceString === undefined || newPriceString === null) {
+      console.warn('No edited price found for product:', productId);
+      return; // Or handle as needed
+    }
+
+    const newPrice = parseFloat(newPriceString);
+    if (isNaN(newPrice) || newPrice < 0) {
+      setError(`Precio inválido para el producto ID ${productId}.`);
+      // Optionally reset the input to the original price or keep the invalid value for correction
+      // setEditedPrices(prev => ({ ...prev, [productId]: products.find(p => p.id === productId)?.price.toString() ?? '' }));
+      return;
+    }
+
+    console.log(`Updating price for product ${productId} to ${newPrice}`);
+    // setLoading(true); // Remove global loading indicator
+    setUpdatingPriceId(productId); // Set local loading indicator for this row
+    setError(null);
+
+    try {
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ price: newPrice })
+        .match({ id: productId });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      console.log('Price updated successfully for product:', productId);
+      // Update local state optimistically or refetch
+      setProducts(prevProducts =>
+        prevProducts.map(p =>
+          p.id === productId ? { ...p, price: newPrice } : p
+        )
+      );
+      // Reset modification status for this product
+      setModifiedPrices(prev => ({ ...prev, [productId]: false }));
+      // Clear the specific edited price state if desired, or keep it reflecting the saved value
+      // setEditedPrices(prev => {
+      //   const newState = { ...prev };
+      //   delete newState[productId]; // Or set it to the newPrice string
+      //   return newState;
+      // });
+
+
+    } catch (err: unknown) {
+      console.error("Error updating price:", err);
+      setError(`Error al actualizar el precio para el producto ID ${productId}.`);
+      // Optionally revert the input field if the update fails
+      // setEditedPrices(prev => ({ ...prev, [productId]: products.find(p => p.id === productId)?.price.toString() ?? '' }));
+    } finally {
+      // setLoading(false); // Remove global loading indicator
+      setUpdatingPriceId(null); // Clear local loading indicator
     }
   };
 
@@ -672,12 +742,34 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               </Table.Cell>
               <Table.RowHeaderCell>{product.name}</Table.RowHeaderCell>
               <Table.Cell>{product.category}</Table.Cell>
+              {/* Editable Price Cell */}
               <Table.Cell>
-                {/* Display price, inline editing removed for now */}
-                {`$${product.price.toFixed(2)}`}
+                <Flex align="center" gap="2">
+                  <TextField.Root
+                    size="1"
+                    type="number"
+                    placeholder="Precio"
+                    value={editedPrices[product.id] ?? product.price.toString()} // Use edited price or original
+                    onChange={(e) => handlePriceChange(product.id, e.target.value)}
+                    style={{ width: '80px' }} // Adjust width as needed
+                  />
+                  {modifiedPrices[product.id] && ( // Show save button only if modified
+                    <Tooltip content="Guardar precio">
+                        <IconButton
+                            size="1"
+                            variant="soft"
+                            color="green"
+                            onClick={() => handleUpdatePrice(product.id)}
+                            disabled={updatingPriceId === product.id} // Disable only this button while updating
+                        >
+                            <CheckIcon />
+                        </IconButton>
+                    </Tooltip>
+                  )}
+                </Flex>
               </Table.Cell>
               <Table.Cell>
-                 {/* Display unit, inline editing removed */}
+                 {/* Display unit */}
                  {product.unitType === 'kg' ? 'kg' : 'c/u'}
               </Table.Cell>
               <Table.Cell>

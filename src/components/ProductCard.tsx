@@ -179,7 +179,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const totalPrice = calculateTotalPrice();
 
   return (
-    <Card size="2" className="bg-[#FFFBF5] border border-[#EAE0CC]"> {/* Added background and border */}
+    <Card size="2" className="bg-[#d0c2a7] border border-[#EAE0CC]"> {/* Added background and border */}
       {/* Main Flex container for the card content */}
       <Flex gap="2" align="start"> {/* Use string "4" */}
         {/* Image Box (Left) */}
