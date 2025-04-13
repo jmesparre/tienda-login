@@ -94,23 +94,38 @@ export default function CartSidebar() {
             <Text>No hay productos en el carrito.</Text>
           ) : (
             <Flex direction="column" gap="3">
-              {cartItems.map((item) => (
-                <Flex key={item.id} gap="3" align="center">
-                  {/* Basic item info */}
-                  <Box flexGrow="1">
+              {cartItems.map((item) => {
+                // Calculate subtotal for the item
+                let itemSubtotal = 0;
+                if (item.unitType === 'kg') {
+                  const totalKg = (item.quantityKg ?? 0) + (item.quantityGrams ?? 0) / 1000;
+                  itemSubtotal = totalKg * item.price;
+                } else {
+                  itemSubtotal = (item.quantityUnits ?? 0) * item.price;
+                }
+
+                return (
+                  <Flex key={item.id} gap="3" align="center">
+                    {/* Basic item info */}
+                    <Box flexGrow="1">
                     <Text size="2" weight="bold">{item.name}</Text>
                     <Text size="1" color="gray" as="div">
                       {item.unitType === 'kg'
                         ? `${item.quantityKg ?? 0} kg ${item.quantityGrams ?? 0} gr`
-                        : `${item.quantityUnits ?? 0} u.`}
+                          : `${item.quantityUnits ?? 0} u.`}
+                      </Text>
+                    </Box>
+                    {/* Display Item Subtotal */}
+                    <Text size="2" weight="medium" style={{ minWidth: '60px', textAlign: 'right' }}>
+                      ${itemSubtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </Text>
-                  </Box>
-                  {/* Remove button */}
-                  <IconButton size="1" color="red" variant="soft" onClick={() => removeFromCart(item.id)}>
-                    <TrashIcon />
-                  </IconButton>
-                </Flex>
-              ))}
+                    {/* Remove button */}
+                    <IconButton size="1" color="red" variant="soft" onClick={() => removeFromCart(item.id)}>
+                      <TrashIcon />
+                    </IconButton>
+                  </Flex>
+                );
+              })}
             </Flex>
           )}
         </Box>

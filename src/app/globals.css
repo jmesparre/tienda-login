@@ -32,16 +32,15 @@ body {
   color: white !important;
 }
 .button-comprar:hover {
-  background-color: #f1610d !important; /* Hover orange */
+  background-color: #ffd000  !important; /* Hover orange */
 }
 
 .button-comprado {
   background-color: #00713fde !important; /* Green */
-  border-color: #EAE0CC !important;
   color: white !important;
 }
 .button-comprado:hover {
-  background-color: #005a32 !important; /* Slightly darker green for hover */
+  background-color: #00713e !important; /* Slightly darker green for hover */
 }
 
 .button-modificar {
@@ -60,12 +59,12 @@ body {
 }
 
 .btn-animated:hover {
-  box-shadow: 0 3px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
 }
 
 .btn-animated:active {
   transform: translateY(-1px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1  );
 }
 
 .btn-animated::after {
