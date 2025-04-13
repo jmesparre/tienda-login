@@ -8,25 +8,27 @@ import Image from 'next/image';
 interface HeaderProps {
   searchTerm: string;
   onSearchTermChange: Dispatch<SetStateAction<string>>;
+  onResetFilters: () => void; // Add prop for resetting filters
 }
 
-export default function Header({ searchTerm, onSearchTermChange }: HeaderProps) {
+export default function Header({ searchTerm, onSearchTermChange, onResetFilters }: HeaderProps) {
   const { getCartTotalItems, openCart } = useCart(); // Get cart count and open function
   const totalItems = getCartTotalItems(); // Calculate total items
 
   return (
     <Flex align="center" justify="between" gap="4" p="4"> {/* Removed borderBottom style */}
-      {/* Logo Placeholder */}
-      <Box>
-      <Link href="/">
+      {/* Logo Placeholder - Add onClick handler */}
+      <Box onClick={() => {
+        onSearchTermChange(''); // Clear search term
+        onResetFilters(); // Reset category filter
+      }}>
         <Image
           src="/logo.png"
           alt="Logo La Vieja Estación"
           width={140}
           height={140}
-          style={{ display: 'inline-block' }} //Para que el width y height funcionen correctamente.  También puede ser flex.
+          style={{ display: 'inline-block', cursor: 'pointer' }} //Para que el width y height funcionen correctamente.  También puede ser flex.
         />
-      </Link>
       </Box>
 
       {/* Search Bar */}

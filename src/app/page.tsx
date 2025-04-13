@@ -10,12 +10,21 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string>('Todo'); // Default to 'Todo'
   const [searchTerm, setSearchTerm] = useState<string>(''); // Add state for search term
 
+  // Function to reset filters
+  const handleResetFilters = () => {
+    setSelectedCategory('Todo');
+  };
+
   return (
     <main>
-      <Header searchTerm={searchTerm} onSearchTermChange={setSearchTerm} /> {/* Pass search state */}
+      <Header
+        searchTerm={searchTerm}
+        onSearchTermChange={setSearchTerm}
+        onResetFilters={handleResetFilters} // Pass the reset function
+      /> {/* Pass search state and reset handler */}
       <CategoryFilters
         onSelectCategory={setSelectedCategory}
-      /> {/* Pass category state and handler, removed selectedCategory prop */}
+      /> {/* Pass category state handler */}
       <Flex direction="column" gap="4" p="4">
         <ProductGrid selectedCategory={selectedCategory} searchTerm={searchTerm} /> {/* Pass selected category and search term */}
       </Flex>
