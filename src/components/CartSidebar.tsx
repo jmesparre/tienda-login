@@ -5,7 +5,8 @@ import { Cross1Icon, TrashIcon } from '@radix-ui/react-icons';
 import { useCart } from '@/context/CartContext';
 
 export default function CartSidebar() {
-  const { cartItems, isCartOpen, closeCart, removeFromCart, getCartTotalPrice } = useCart();
+  // Add clearCart to the destructured hook
+  const { cartItems, isCartOpen, closeCart, removeFromCart, getCartTotalPrice, clearCart } = useCart();
 
   if (!isCartOpen) {
     return null; // Don't render if closed
@@ -71,7 +72,20 @@ export default function CartSidebar() {
           <IconButton variant="ghost" onClick={closeCart}>
             <Cross1Icon width="18" height="18" />
           </IconButton>
-      </Flex>
+        </Flex>
+        {/* Add Empty Cart Button below header */}
+        <Flex p="2" justify="end">
+            <Button
+                size="1"
+                variant="soft"
+                color="red"
+                onClick={clearCart}
+                disabled={cartItems.length === 0} // Disable if cart is empty
+            >
+                <TrashIcon width="14" height="14" />
+                Vaciar canasto
+            </Button>
+        </Flex>
 
       {/* Cart Items Area */}
       <ScrollArea style={{ flexGrow: 1 }}> {/* Allow content to scroll */}

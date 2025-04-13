@@ -21,6 +21,7 @@ interface CartContextType {
   removeFromCart: (itemId: number) => void; // Add remove function
   getCartTotalItems: () => number;
   getCartTotalPrice: () => number; // Add total price function
+  clearCart: () => void; // Add function to clear the cart
   isCartOpen: boolean; // Add sidebar state
   openCart: () => void; // Add function to open
   closeCart: () => void; // Add function to close
@@ -123,6 +124,10 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
   };
 
+  const clearCart = () => {
+    setCartItems([]); // Set cart to empty array
+  };
+
   // Calculate total number of distinct items in cart
   const getCartTotalItems = () => {
     // Counts distinct product lines, not total quantity
@@ -152,6 +157,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     removeFromCart,
     getCartTotalItems,
     getCartTotalPrice,
+    clearCart, // Expose clearCart
     isCartOpen,
     openCart,
     closeCart,

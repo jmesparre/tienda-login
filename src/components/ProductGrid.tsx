@@ -87,7 +87,7 @@ export default function ProductGrid({ selectedCategory, searchTerm }: ProductGri
   }
 
   return (
-    <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="3" width="auto">
+    <Grid columns={{ initial: '1', sm: '2', lg: '3' }} gap="3" width="auto">
       {filteredProducts.map((product) => (
         // Ensure the product passed to ProductCard matches its expected props
         <ProductCard key={product.id} product={{
