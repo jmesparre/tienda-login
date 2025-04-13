@@ -65,13 +65,26 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   // Handlers for quantity changes
   const handleQuantityChange = (type: 'kg' | 'grams' | 'units', delta: number) => {
+    const MAX_VALUE = 900; // Define the maximum limit
+
     if (type === 'kg') {
-      setQuantityKg((prev: number) => Math.max(0, prev + delta)); // Added type
+      setQuantityKg((prev: number) => {
+        const newValue = prev + delta;
+        // Ensure value is between 0 and MAX_VALUE
+        return Math.max(0, Math.min(MAX_VALUE, newValue));
+      });
     } else if (type === 'grams') {
-      // Increment/decrement grams by 100, ensure it doesn't go below 0
-      setQuantityGrams((prev: number) => Math.max(0, prev + delta * 100)); // Added type
+      setQuantityGrams((prev: number) => {
+        const newValue = prev + delta * 100;
+        // Ensure value is between 0 and MAX_VALUE (grams are capped at 999)
+        return Math.max(0, Math.min(MAX_VALUE, newValue));
+      });
     } else if (type === 'units') {
-      setQuantityUnits((prev: number) => Math.max(0, prev + delta)); // Added type
+      setQuantityUnits((prev: number) => {
+        const newValue = prev + delta;
+        // Ensure value is between 0 and MAX_VALUE
+        return Math.max(0, Math.min(MAX_VALUE, newValue));
+      });
     }
   };
 
@@ -189,11 +202,18 @@ export default function ProductCard({ product }: ProductCardProps) {
                   <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('kg', -1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><MinusIcon /></IconButton>
                   <TextField.Root
                     size="1"
-                    type="number" // Use number type for better input handling
-                    className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
-                    value={String(quantityKg)} // Bind value to state
-                    onChange={(e) => setQuantityKg(parseInt(e.target.value, 10) || 0)} // Update state on change
+                    type="number"
+                    className="bg-[#FFFBF5] border border-[#EAE0CC]"
+                    value={String(quantityKg)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow empty string or numbers up to 3 digits
+                      if (value === '' || (/^\d+$/.test(value) && value.length <= 3)) {
+                        setQuantityKg(parseInt(value, 10) || 0);
+                      }
+                    }}
                     style={{ width: '37px', textAlign: 'center' }}
+                    maxLength={3} // Add maxLength attribute for visual cue (though onChange enforces it)
                   />
                   <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('kg', 1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><PlusIcon /></IconButton>
                 </Flex>
@@ -203,10 +223,17 @@ export default function ProductCard({ product }: ProductCardProps) {
                   <TextField.Root
                     size="1"
                     type="number"
-                    className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
-                    value={String(quantityGrams)} // Bind value to state
-                    onChange={(e) => setQuantityGrams(parseInt(e.target.value, 10) || 0)} // Update state on change
+                    className="bg-[#FFFBF5] border border-[#EAE0CC]"
+                    value={String(quantityGrams)}
+                     onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow empty string or numbers up to 3 digits
+                      if (value === '' || (/^\d+$/.test(value) && value.length <= 3)) {
+                        setQuantityGrams(parseInt(value, 10) || 0);
+                      }
+                    }}
                     style={{ width: '37px', textAlign: 'center' }}
+                    maxLength={3} // Add maxLength attribute
                   />
                   <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('grams', 1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><PlusIcon /></IconButton>
                 </Flex>
@@ -218,10 +245,17 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <TextField.Root
                   size="1"
                   type="number"
-                  className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
-                  value={String(quantityUnits)} // Bind value to state
-                  onChange={(e) => setQuantityUnits(parseInt(e.target.value, 10) || 0)} // Update state on change
+                  className="bg-[#FFFBF5] border border-[#EAE0CC]"
+                  value={String(quantityUnits)}
+                   onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow empty string or numbers up to 3 digits
+                      if (value === '' || (/^\d+$/.test(value) && value.length <= 3)) {
+                        setQuantityUnits(parseInt(value, 10) || 0);
+                      }
+                    }}
                   style={{ width: '40px', textAlign: 'center' }}
+                  maxLength={3} // Add maxLength attribute
                  />
                 <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('units', 1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><PlusIcon /></IconButton>
               </Flex>

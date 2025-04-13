@@ -55,7 +55,7 @@ body {
 /* Animated button styles */
 .btn-animated {
   position: relative; /* Needed for absolute positioning of ::after */
-  transition: all 0.2s;
+  transition: all 0.8s;
 }
 
 .btn-animated:hover {
@@ -115,4 +115,16 @@ input.rt-TextFieldInput {
 
 .rt-TextFieldSlot {
   background:  rgba(252, 238, 200, 0.96);
+}
+
+.rt-BaseButton:where(.rt-variant-outline) {
+  box-shadow: inset 0 0 0 1px #d0c2a7;
+}
+
+.rt-IconButton {
+  color: #5e6b71;
+}
+
+.rt-TextFieldRoot:where(.rt-variant-surface) {
+  --text-field-focus-color:#d0c2a7;
 }

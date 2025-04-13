@@ -18,7 +18,7 @@ import {
   Tooltip // Added Tooltip for icons
   // Removed unused TextArea import
 } from '@radix-ui/themes';
-import { Cross1Icon, Pencil1Icon, MagnifyingGlassIcon, PlusIcon, PlayIcon, PauseIcon } from '@radix-ui/react-icons'; // Added PlayIcon, PauseIcon
+import { Cross1Icon, Cross2Icon, Pencil1Icon, MagnifyingGlassIcon, PlusIcon, PlayIcon, PauseIcon } from '@radix-ui/react-icons'; // Added Cross2Icon, PlayIcon, PauseIcon
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -322,6 +322,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
              <TextField.Slot>
                <MagnifyingGlassIcon height="16" width="16" />
              </TextField.Slot>
+             {/* Add clear button slot */}
+             {searchTerm && (
+                <TextField.Slot>
+                    <IconButton size="1" variant="ghost" color="gray" onClick={() => setSearchTerm('')} style={{ cursor: 'pointer' }}>
+                        <Cross2Icon height="14" width="14" />
+                    </IconButton>
+                </TextField.Slot>
+             )}
            </TextField.Root>
         </Flex>
         <Link href="#" onClick={onLogout} size="2" color="gray" highContrast>

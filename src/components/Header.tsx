@@ -1,5 +1,5 @@
-  import { Box, Flex, Text, TextField } from '@radix-ui/themes';
-import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+  import { Box, Flex, Text, TextField, IconButton } from '@radix-ui/themes'; // Added IconButton
+import { MagnifyingGlassIcon, Cross2Icon } from '@radix-ui/react-icons'; // Added Cross2Icon
 import type { Dispatch, SetStateAction } from 'react'; // Import types
 import { useCart } from '@/context/CartContext'; // Import useCart
 import Image from 'next/image';
@@ -39,11 +39,19 @@ export default function Header({ searchTerm, onSearchTermChange, onResetFilters 
           className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
           onChange={(e) => onSearchTermChange(e.target.value)} // Update state on change
         >
-          <TextField.Slot>
-            <MagnifyingGlassIcon height="16" width="16" />
-          </TextField.Slot>
-        </TextField.Root>
-      </Box>
+           <TextField.Slot>
+             <MagnifyingGlassIcon height="16" width="16" />
+           </TextField.Slot>
+           {/* Add clear button slot */}
+           {searchTerm && (
+              <TextField.Slot>
+                  <IconButton size="1" variant="ghost" color="gray" onClick={() => onSearchTermChange('')} style={{ cursor: 'pointer' }}>
+                      <Cross2Icon height="14" width="14" />
+                  </IconButton>
+              </TextField.Slot>
+           )}
+         </TextField.Root>
+       </Box>
 
       {/* Cart Section - Make clickable */}
       <Box onClick={openCart} style={{ cursor: 'pointer' }}> {/* Add onClick and pointer */}
