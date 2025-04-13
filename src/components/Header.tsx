@@ -2,7 +2,6 @@
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import type { Dispatch, SetStateAction } from 'react'; // Import types
 import { useCart } from '@/context/CartContext'; // Import useCart
-import Link from 'next/link';
 import Image from 'next/image';
 
 interface HeaderProps {

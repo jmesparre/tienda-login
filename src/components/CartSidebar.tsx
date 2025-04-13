@@ -66,7 +66,7 @@ export default function CartSidebar() {
       >
         {/* Sidebar Header */}
         <Flex justify="between" align="center" p="4" style={{ borderBottom: '1px solid var(--gray-a6)', flexShrink: 0 }}>
-          <Heading size="4">Carrito de Compras</Heading>
+          <Heading size="4">Canasto de Compras</Heading>
           {/* Removed stray style properties from here */}
           <IconButton variant="ghost" onClick={closeCart}>
             <Cross1Icon width="18" height="18" />
