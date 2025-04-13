@@ -247,7 +247,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               size="1"
               // Removed invalid color prop
               onClick={handleRemoveFromCart}
-              style={{ color: '#eb7c80c9', cursor: 'pointer', textDecoration: 'underline', marginBottom: 'var(--space-1)' }} // Moved color to style prop
+              style={{ color: '#eb7c80', cursor: 'pointer', textDecoration: 'underline', marginBottom: 'var(--space-1)' }} // Moved color to style prop
               align="right"
             >
               Quitar

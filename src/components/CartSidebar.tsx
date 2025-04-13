@@ -78,7 +78,7 @@ export default function CartSidebar() {
             <Button
                 size="1"
                 variant="soft"
-                color="red"
+                color="gray"
                 onClick={clearCart}
                 disabled={cartItems.length === 0} // Disable if cart is empty
             >
