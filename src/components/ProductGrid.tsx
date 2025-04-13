@@ -12,6 +12,7 @@ interface Product {
   imageUrl: string | null; // Allow null from DB
   unitType: 'kg' | 'unit'; // Add unit type
   promotionPrice?: number | null; // Add optional promotion price
+  isPaused: boolean; // Add isPaused field
 }
 
 // Removed placeholder product data
@@ -47,10 +48,13 @@ export default function ProductGrid({ selectedCategory, searchTerm }: ProductGri
           price: p.price,
           imageUrl: p.image_url, // Map image_url
           unitType: p.unit_type, // Map unit_type
-          promotionPrice: p.promotion_price // Map promotion_price
+          promotionPrice: p.promotion_price, // Map promotion_price
+          isPaused: p.is_paused // Map is_paused
         })) || [];
 
-        setProducts(mappedData);
+        // Filter out paused products immediately after fetching
+        const activeProducts = mappedData.filter(p => !p.isPaused);
+        setProducts(activeProducts);
       } catch (err: unknown) { // Use unknown instead of any
         console.error("Error fetching products:", err);
         setError("Error al cargar los productos. Intente de nuevo.");

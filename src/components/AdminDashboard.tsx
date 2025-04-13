@@ -14,10 +14,11 @@ import {
   IconButton,
   Link,
   Text, // Re-added Text
-  Dialog // Added Dialog
+  Dialog, // Added Dialog
+  Tooltip // Added Tooltip for icons
   // Removed unused TextArea import
 } from '@radix-ui/themes';
-import { Cross1Icon, Pencil1Icon, MagnifyingGlassIcon, PlusIcon } from '@radix-ui/react-icons'; // Added MagnifyingGlassIcon and PlusIcon
+import { Cross1Icon, Pencil1Icon, MagnifyingGlassIcon, PlusIcon, PlayIcon, PauseIcon } from '@radix-ui/react-icons'; // Added PlayIcon, PauseIcon
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -32,7 +33,8 @@ interface Product {
     unitType: 'kg' | 'unit'; // Keep as 'kg' | 'unit'
     promotionPrice: number | null;
     imageUrl: string | null;
-    createdAt: string; // Add created_at if needed
+    createdAt: string;
+    isPaused: boolean; // Added isPaused field
 }
 
 // Removed exampleProducts
@@ -71,7 +73,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         unitType: p.unit_type, // Map unit_type
         promotionPrice: p.promotion_price, // Map promotion_price
         imageUrl: p.image_url, // Map image_url
-        createdAt: p.created_at
+        createdAt: p.created_at,
+        isPaused: p.is_paused // Map is_paused
       })) || [];
 
       setProducts(mappedData);
@@ -99,6 +102,33 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } else {
       console.error('Product not found for editing:', productId);
       setError('Producto no encontrado para editar.');
+    }
+  };
+
+  // --- Toggle Pause Product Handler ---
+  const handleTogglePauseProduct = async (productId: number, currentStatus: boolean) => {
+    console.log(`Toggling pause status for product ${productId} to ${!currentStatus}`);
+    try {
+      setLoading(true); // Optional: Indicate loading during update
+      setError(null);
+
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ is_paused: !currentStatus }) // Toggle the status
+        .match({ id: productId });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      console.log('Product pause status updated successfully');
+      fetchProducts(); // Refresh the list to show the change
+
+    } catch (err: unknown) {
+      console.error("Error updating product pause status:", err);
+      setError("Error al actualizar el estado del producto.");
+    } finally {
+      setLoading(false); // Reset loading state if used
     }
   };
 
@@ -153,7 +183,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     imageUrl: '',
   });
 
-  // TODO: Implement filtering and sorting logic based on state
+  // --- Filtering and Sorting Logic ---
+  let filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Apply category filter if not 'Todo'
+  if (activeCategory !== 'Todo') {
+    filteredProducts = filteredProducts.filter(product => product.category === activeCategory);
+  }
+
+  // TODO: Implement sorting logic based on sortOrder state using filteredProducts
 
   const handleNewProductChange = (field: keyof typeof newProduct, value: string) => {
     // Ensure correct field name 'unitType' is used if needed
@@ -589,7 +629,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       {/* Products Table */}
       <Table.Root variant="surface">
         <Table.Header>
-          <Table.Row><Table.ColumnHeaderCell>Image</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Price</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Promotion Price</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell></Table.Row>
+          <Table.Row><Table.ColumnHeaderCell>Imagen</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Nombre</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Categoría</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Precio</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Unidad</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Oferta</Table.ColumnHeaderCell><Table.ColumnHeaderCell>Acciones / Estado</Table.ColumnHeaderCell></Table.Row>
         </Table.Header>
 
         <Table.Body>
@@ -608,7 +648,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                <Table.Cell colSpan={7} align="center"><Text>No hay productos para mostrar.</Text></Table.Cell>
              </Table.Row>
           )}
-          {!loading && !error && products.map((product) => (
+          {/* Map over filtered products */}
+          {!loading && !error && filteredProducts.map((product) => (
             <Table.Row key={product.id} align="center">
               {/* Image Cell */}
               <Table.Cell>
@@ -643,6 +684,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <IconButton size="1" variant="soft" color="red" onClick={() => handleDeleteProduct(product.id)}>
                     <Cross1Icon />
                   </IconButton>
+                  {/* Pause/Resume Button */}
+                  <Tooltip content={product.isPaused ? "Reanudar producto" : "Pausar producto"}>
+                    <IconButton
+                      size="1"
+                      variant="soft"
+                      color={product.isPaused ? "green" : "orange"}
+                      onClick={() => handleTogglePauseProduct(product.id, product.isPaused)}
+                    >
+                      {product.isPaused ? <PlayIcon /> : <PauseIcon />}
+                    </IconButton>
+                  </Tooltip>
                 </Flex>
               </Table.Cell>
             </Table.Row>
