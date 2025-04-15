@@ -56,6 +56,8 @@ body {
 .btn-animated {
   position: relative; /* Needed for absolute positioning of ::after */
   transition: all 0.8s;
+  width: 90px;
+  cursor: pointer;
 }
 
 .btn-animated:hover {
@@ -127,4 +129,8 @@ input.rt-TextFieldInput {
 
 .rt-TextFieldRoot:where(.rt-variant-surface) {
   --text-field-focus-color:#d0c2a7;
+}
+
+.pointer {
+  cursor: pointer;
 }

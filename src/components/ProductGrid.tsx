@@ -8,6 +8,7 @@ interface Product {
   id: number;
   name: string;
   category: string;
+  subcategory: string | null; // Add subcategory field
   price: number;
   imageUrl: string | null; // Allow null from DB
   unitType: 'kg' | 'unit'; // Add unit type
@@ -19,10 +20,11 @@ interface Product {
 
 interface ProductGridProps {
   selectedCategory: string;
+  selectedSubcategory: string; // Add selectedSubcategory prop
   searchTerm: string; // Add searchTerm prop
 }
 
-export default function ProductGrid({ selectedCategory, searchTerm }: ProductGridProps) {
+export default function ProductGrid({ selectedCategory, selectedSubcategory, searchTerm }: ProductGridProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +47,7 @@ export default function ProductGrid({ selectedCategory, searchTerm }: ProductGri
           id: p.id,
           name: p.name,
           category: p.category,
+          subcategory: p.subcategory, // Map subcategory
           price: p.price,
           imageUrl: p.image_url, // Map image_url
           unitType: p.unit_type, // Map unit_type
@@ -74,9 +77,15 @@ export default function ProductGrid({ selectedCategory, searchTerm }: ProductGri
     : products;
 
   // Then, apply category filter
-  const filteredProducts = selectedCategory === 'Todo'
+  const categoryFilteredProducts = selectedCategory === 'Todo'
     ? searchedProducts
     : searchedProducts.filter(product => product.category === selectedCategory);
+
+  // Finally, apply subcategory filter (only if a category and subcategory are selected)
+  const filteredProducts = selectedCategory === 'Todo' || selectedSubcategory === 'Todo' || !selectedSubcategory
+    ? categoryFilteredProducts // If 'Todo' category/subcategory or no subcategory selected, show all from category
+    : categoryFilteredProducts.filter(product => product.subcategory === selectedSubcategory);
+
 
   if (loading) {
     return <Flex justify="center" p="4"><Text className='pt-8'>Cargando productos...</Text></Flex>;

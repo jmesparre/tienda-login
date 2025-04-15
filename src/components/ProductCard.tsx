@@ -13,9 +13,10 @@ import clsx from 'clsx'; // Re-added clsx import
 
 // Define the structure matching ProductGrid
 interface Product {
-  id: number; // Added id for consistency if needed, though not used directly here yet
+  id: number;
   name: string;
   category: string;
+  subcategory: string | null; // Add subcategory field
   price: number;
   imageUrl: string;
   unitType: 'kg' | 'unit'; // Include unitType
@@ -191,7 +192,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Center Column: Info + Quantity */}
         <Flex direction="column" flexGrow="1" gap="1"> {/* Use string "2" */}
           <Text size="3" weight="bold">{product.name}</Text>
-          <Text size="1" color="gray">{product.category}</Text>
+          {/* Display Category and Subcategory */}
+          <Text size="1" color="gray">
+            {product.category}
+            {product.subcategory ? `, ${product.subcategory}` : ''} {/* Add subcategory if it exists */}
+          </Text>
 
           {/* Quantity Inputs - Conditional Rendering */}
           <Flex direction="column" gap="1" mt="1"> {/* Use strings "1" */}
