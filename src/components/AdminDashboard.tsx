@@ -54,6 +54,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [editedPrices, setEditedPrices] = useState<Record<number, string>>({});
   const [modifiedPrices, setModifiedPrices] = useState<Record<number, boolean>>({});
   const [updatingPriceId, setUpdatingPriceId] = useState<number | null>(null); // State for local loading
+  const [isUpdatingProduct, setIsUpdatingProduct] = useState(false); // State for modal update loading
 
 
   // --- Fetch Products Function ---
@@ -387,8 +388,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
        // return;
     }
 
+    setIsUpdatingProduct(true); // Set modal-specific loading state
     try {
-      setLoading(true); // Indicate loading state during update
+      // setLoading(true); // REMOVED: Indicate loading state during update
       setError(null); // Clear previous errors
 
       const { error: updateError } = await supabase
@@ -401,16 +403,25 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       }
 
       console.log('Product updated successfully:', editingProduct.id);
+
+      // Optimistically update the local state instead of refetching
+      setProducts(prevProducts =>
+        prevProducts.map(p =>
+          p.id === editingProduct.id ? { ...editingProduct } : p // Replace the edited product
+        )
+      );
+
       setIsEditModalOpen(false); // Close modal
       setEditingProduct(null); // Clear editing state
-      fetchProducts(); // Refresh the product list to show changes
+      // fetchProducts(); // REMOVED: No longer refetching the entire list
 
     } catch (err: unknown) {
       console.error("Error updating product:", err);
       setError("Error al actualizar el producto.");
       // Keep modal open or provide specific feedback
     } finally {
-       setLoading(false); // Reset loading state
+       // setLoading(false); // REMOVED: Reset loading state
+       setIsUpdatingProduct(false); // Reset modal-specific loading state
     }
   };
 
@@ -801,7 +812,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   Cancelar
                 </Button>
               </Dialog.Close>
-              <Button onClick={handleUpdateProduct}>Guardar Cambios</Button>
+              <Button onClick={handleUpdateProduct} disabled={isUpdatingProduct}>
+                {isUpdatingProduct ? 'Guardando...' : 'Guardar Cambios'}
+              </Button>
             </Flex>
           </Dialog.Content>
         </Dialog.Root>

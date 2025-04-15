@@ -50,24 +50,24 @@ export default function CategoryFilters({
 
       {/* Subcategory Filters - Render only if subcategories exist */}
       {subcategories.length > 0 && (
-        <Flex wrap="wrap" gap="2" pl="2"> {/* Indent subcategories slightly */}
+        <Flex wrap="wrap" gap="3"> {/* Indent subcategories slightly */}
           {subcategories.map((subcategory) => {
             const isSubActive = selectedSubcategory === subcategory;
             return (
               <Button
                 key={subcategory}
-                variant="soft" // Use soft variant for subcategories
-                size="2" // Slightly smaller size
+                variant="ghost" // Use ghost variant like main categories
+                size="3" // Use same size as main categories
                 color="gray"
                 onClick={() => onSelectSubcategory(subcategory)}
                 className={clsx(
-                  'transition-colors duration-150 pointer',
-                  isSubActive ? 'active-subcategory-filter' : '' // Style for active subcategory
+                  'transition-colors duration-150 pointer'
+                  // Removed active-subcategory-filter class, using inline styles like main categories
                 )}
                 style={
                   isSubActive
-                    ? { fontWeight: 'bold', backgroundColor: 'var(--gray-a5)' } // Example active style
-                    : {}
+                    ? { textDecoration: 'underline', textUnderlineOffset: '4px', border: 'none', backgroundColor: 'transparent' } // Active style like main categories
+                    : { textDecoration: 'none', border: 'none', backgroundColor: 'transparent' } // Inactive style like main categories
                 }
               >
                 {subcategory}
