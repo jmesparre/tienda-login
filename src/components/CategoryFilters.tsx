@@ -18,9 +18,9 @@ const mainCategories = Object.keys(categoryData);
 
 interface CategoryFiltersProps {
   selectedCategory: string;
-  onSelectCategory: (category: string) => void; // Simplified type
+  onSelectCategory: (category: string) => void; // Keep simplified type for this one as it works
   selectedSubcategory: string;
-  onSelectSubcategory: Dispatch<SetStateAction<string>>;
+  onSelectSubcategory: Dispatch<SetStateAction<string>>; // Reverted to original type
 }
 
 export default function CategoryFilters({
@@ -34,14 +34,18 @@ export default function CategoryFilters({
   const handleCategorySelect = (category: string) => {
     onSelectCategory(category);
     // Reset subcategory when a new main category is selected
-    const subcats = categoryData[category as keyof typeof categoryData];
-    // Select the first subcategory ('Todo' if it exists) or empty string
-    const defaultSubcategory = Array.isArray(subcats) && subcats.includes('Todo')
-      ? 'Todo'
-      : Array.isArray(subcats) && subcats.length > 0
-      ? subcats[0] // Use the first actual subcategory if 'Todo' isn't present
-      : ''; // Default to empty string if no subcategories or invalid category
-    onSelectSubcategory(defaultSubcategory as string); // Explicitly cast to string
+    const subcats = categoryData[category as keyof typeof categoryData] || []; // Ensure subcats is always an array
+    let determinedSubcategory: string = ''; // Initialize with empty string
+
+    if (Array.isArray(subcats)) {
+        if (subcats.includes('Todo')) {
+            determinedSubcategory = 'Todo';
+        } else if (subcats.length > 0) {
+            determinedSubcategory = subcats[0];
+        }
+    }
+    // Pass the guaranteed string value, satisfying Dispatch<SetStateAction<string>>
+    onSelectSubcategory(determinedSubcategory);
   };
 
   return (
@@ -84,7 +88,7 @@ export default function CategoryFilters({
                 variant="ghost"
                 size="2" // Slightly smaller size for subcategories
                 color="gray"
-                onClick={() => onSelectSubcategory(subcategory)}
+                onClick={() => onSelectSubcategory(subcategory)} // This call should be fine now
                 className={clsx(
                   'transition-colors duration-150 pointer',
                   isActive ? 'active-category-filter' : '' // Reuse the same active style or create a new one
