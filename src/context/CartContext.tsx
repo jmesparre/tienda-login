@@ -9,16 +9,19 @@ interface CartItem {
   price: number;
   unitType: 'kg' | 'unit';
   quantityKg?: number; // Optional: Quantity in kilograms
-  quantityGrams?: number; // Optional: Quantity in grams
-  quantityUnits?: number; // Optional: Quantity in units
-  imageUrl?: string; // Optional: for displaying in cart later
+  quantityGrams?: number;
+  quantityUnits?: number;
+  imageUrl?: string;
+  category?: string; // Add category (optional)
+  subcategory?: string | null; // Add subcategory (optional, nullable)
 }
 
 // Define the shape of the context data
 interface CartContextType {
   cartItems: CartItem[];
+  // Update addToCart item type to include category/subcategory
   addToCart: (item: Omit<CartItem, 'quantityKg' | 'quantityGrams' | 'quantityUnits'>, quantities: { kg?: number; grams?: number; units?: number }) => void;
-  removeFromCart: (itemId: number) => void; // Add remove function
+  removeFromCart: (itemId: number) => void;
   getCartTotalItems: () => number;
   getCartTotalPrice: () => number; // Add total price function
   clearCart: () => void; // Add function to clear the cart
@@ -37,7 +40,7 @@ interface CartProviderProps {
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false); // State for sidebar visibility
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Load cart from localStorage on initial mount
   useEffect(() => {
@@ -75,10 +78,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
 
+  // Update addToCart parameter type to match the updated CartContextType
   const addToCart = (product: Omit<CartItem, 'quantityKg' | 'quantityGrams' | 'quantityUnits'>, quantities: { kg?: number; grams?: number; units?: number }) => {
     setCartItems(prevItems => {
       const existingItemIndex = prevItems.findIndex(item => item.id === product.id);
-      const newItems = [...prevItems]; // Changed let to const
+      const newItems = [...prevItems];
 
       const quantityKg = quantities.kg ?? 0;
       const quantityGrams = quantities.grams ?? 0;
@@ -87,22 +91,22 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       // Basic logic: Add if quantity > 0, update if exists, remove if quantity becomes 0
       // More complex logic needed for kg/grams combined update
       if (quantityKg > 0 || quantityGrams > 0 || quantityUnits > 0) {
+        const newItemData = {
+          ...product, // Includes id, name, price, unitType, imageUrl, category, subcategory
+          quantityKg: product.unitType === 'kg' ? quantityKg : undefined,
+          quantityGrams: product.unitType === 'kg' ? quantityGrams : undefined,
+          quantityUnits: product.unitType === 'unit' ? quantityUnits : undefined,
+        };
+
         if (existingItemIndex > -1) {
-          // Update existing item (simple overwrite for now)
+          // Update existing item, ensuring category/subcategory are preserved/updated
           newItems[existingItemIndex] = {
-            ...newItems[existingItemIndex],
-            quantityKg: product.unitType === 'kg' ? quantityKg : undefined,
-            quantityGrams: product.unitType === 'kg' ? quantityGrams : undefined,
-            quantityUnits: product.unitType === 'unit' ? quantityUnits : undefined,
+            ...newItems[existingItemIndex], // Keep existing data
+            ...newItemData, // Overwrite with new data (including quantities, category, etc.)
           };
         } else {
           // Add new item
-          newItems.push({
-            ...product,
-            quantityKg: product.unitType === 'kg' ? quantityKg : undefined,
-            quantityGrams: product.unitType === 'kg' ? quantityGrams : undefined,
-            quantityUnits: product.unitType === 'unit' ? quantityUnits : undefined,
-          });
+          newItems.push(newItemData);
         }
       } else {
          // If quantities are zero, remove item if it exists

@@ -1,102 +1,73 @@
 import { Flex, Button } from '@radix-ui/themes';
 import type { Dispatch, SetStateAction } from 'react';
-import clsx from 'clsx';
-
-// Define categories and their subcategories
-const categoryData = {
-  'Todo': [],
-  'Frutas': [], // Add subcategories if needed
-  'Verdura': [], // Add subcategories if needed
-  'Carniceria': [], // Add subcategories if needed
-  'Fiambreria': ['Todo', 'Queso', 'Jamon', 'Picada'],
-  'Almacén': [], // Add subcategories if needed
-  'Limpieza': [], // Add subcategories if needed
-  'Bebidas': ['Todo', 'Aguas', 'Gaseosas', 'Energizantes', 'Vinos', 'Licores', 'Sodas', 'Cervezas']
-};
-
-const mainCategories = Object.keys(categoryData);
+import clsx from 'clsx'; // Utility for conditionally joining class names
+import { mainCategories, getSubcategories } from '@/lib/categories'; // Import categories data
 
 interface CategoryFiltersProps {
   selectedCategory: string;
-  onSelectCategory: (category: string) => void; // Keep simplified type for this one as it works
-  selectedSubcategory: string;
-  onSelectSubcategory: Dispatch<SetStateAction<string>>; // Reverted to original type
+  selectedSubcategory: string; // Add prop for selected subcategory
+  onSelectCategory: (category: string) => void; // Update prop type
+  onSelectSubcategory: Dispatch<SetStateAction<string>>; // Add prop for subcategory selection
 }
 
 export default function CategoryFilters({
   selectedCategory,
-  onSelectCategory,
   selectedSubcategory,
+  onSelectCategory,
   onSelectSubcategory
 }: CategoryFiltersProps) {
-  const subcategories = categoryData[selectedCategory as keyof typeof categoryData] || [];
-
-  const handleCategorySelect = (category: string) => {
-    onSelectCategory(category);
-    // Reset subcategory when a new main category is selected
-    const subcats = categoryData[category as keyof typeof categoryData] || []; // Ensure subcats is always an array
-    let determinedSubcategory: string = ''; // Initialize with empty string
-
-    if (Array.isArray(subcats)) {
-        if (subcats.includes('Todo')) {
-            determinedSubcategory = 'Todo';
-        } else if (subcats.length > 0) {
-            determinedSubcategory = subcats[0];
-        }
-    }
-    // Pass the guaranteed string value, satisfying Dispatch<SetStateAction<string>>
-    onSelectSubcategory(determinedSubcategory);
-  };
+  const subcategories = getSubcategories(selectedCategory); // Get subcategories for the selected main category
 
   return (
-    <div>
+    <Flex direction="column" px="4" py="3" gap="3"> {/* Main container */}
       {/* Main Category Filters */}
-      <Flex wrap="wrap" gap="3" px="4" py="3">
+      <Flex wrap="wrap" gap="3">
         {mainCategories.map((category) => {
           const isActive = selectedCategory === category;
+
           return (
-            <Button
-              key={category}
-              variant="ghost"
-              size="3"
-              color="gray"
-              onClick={() => handleCategorySelect(category)}
-              className={clsx(
-                'transition-colors duration-150 pointer',
-                isActive ? 'active-category-filter' : ''
-              )}
-              style={
-                isActive
-                  ? { textDecoration: 'underline', textUnderlineOffset: '4px', border: 'none', backgroundColor: 'transparent' }
-                  : { textDecoration: 'none', border: 'none', backgroundColor: 'transparent' }
-              }
-            >
-              {category}
-            </Button>
+          <Button
+            key={category}
+            variant="ghost"
+            size="3"
+            color="gray"
+            onClick={() => onSelectCategory(category)}
+            className={clsx(
+              'transition-colors duration-150 pointer',
+              isActive ? 'active-category-filter' : '' // Apply active style
+            )}
+            style={
+              isActive
+                ? { textDecoration: 'underline', textUnderlineOffset: '4px', border: 'none', backgroundColor: 'transparent' }
+                : { textDecoration: 'none', border: 'none', backgroundColor: 'transparent' }
+            }
+          >
+            {category}
+          </Button>
           );
         })}
       </Flex>
 
-      {/* Subcategory Filters - Render only if a category other than 'Todo' is selected and has subcategories */}
-      {selectedCategory !== 'Todo' && subcategories.length > 0 && (
-        <Flex wrap="wrap" gap="3" px="4" pb="3" pt="1"> {/* Adjusted padding */}
+      {/* Subcategory Filters - Render only if subcategories exist */}
+      {subcategories.length > 0 && (
+        <Flex wrap="wrap" gap="2" pl="2"> {/* Indent subcategories slightly */}
           {subcategories.map((subcategory) => {
-            const isActive = selectedSubcategory === subcategory;
+            const isSubActive = selectedSubcategory === subcategory;
             return (
               <Button
                 key={subcategory}
-                variant="ghost"
-                size="2" // Slightly smaller size for subcategories
+                variant="soft" // Use soft variant for subcategories
+                size="2" // Slightly smaller size
                 color="gray"
-                onClick={() => onSelectSubcategory(subcategory)} // This call should be fine now
+                onClick={() => onSelectSubcategory(subcategory)}
                 className={clsx(
                   'transition-colors duration-150 pointer',
-                  isActive ? 'active-category-filter' : '' // Reuse the same active style or create a new one
+                  isSubActive ? 'active-subcategory-filter' : '' // Style for active subcategory
                 )}
                 style={
-                  isActive
-                    ? { textDecoration: 'underline', textUnderlineOffset: '4px', border: 'none', backgroundColor: 'transparent' }
-                    : { textDecoration: 'none', border: 'none', backgroundColor: 'transparent' }
+                  isSubActive
+                    ? { fontWeight: 'bold', backgroundColor: 'var(--gray-a5)' } // Example active style
+                    : {}
                 }
               >
                 {subcategory}
@@ -105,6 +76,6 @@ export default function CategoryFilters({
           })}
         </Flex>
       )}
-    </div>
+    </Flex>
   );
 }

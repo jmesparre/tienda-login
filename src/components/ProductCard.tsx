@@ -3,27 +3,13 @@ import Image from 'next/image'; // Using next/image for potential optimization
 import { PlusIcon, MinusIcon } from '@radix-ui/react-icons';
 import { useState, useEffect } from 'react'; // Import useState and useEffect
 import { useCart } from '@/context/CartContext'; // Import useCart
-import clsx from 'clsx'; // Re-added clsx import
-// Removed unused import: categoryColorMap
+import clsx from 'clsx';
+import { Product as ProductType } from '@/lib/categories'; // Import the shared Product type
 
-// Import the Product type definition (assuming it might be moved later)
-// If ProductGrid is the only place it's defined, this import isn't needed here,
-// but it's good practice if the type becomes shared.
-// For now, we'll redefine it or assume it's globally available via ProductGrid import.
-
-// Define the structure matching ProductGrid
-interface Product {
-  id: number;
-  name: string;
-  category: string;
-  subcategory: string | null; // Add subcategory field
-  price: number;
-  imageUrl: string;
-  unitType: 'kg' | 'unit'; // Include unitType
-}
+// Removed local Product interface definition
 
 interface ProductCardProps {
-  product: Product; // Use the updated Product type
+  product: ProductType; // Use the shared ProductType
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
@@ -35,9 +21,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isInCart = !!cartItem;
 
   // Local state for quantity inputs - Initialize with cart quantity if available
-  const initialKg = cartItem?.quantityKg ?? 0; // Corrected access
-  const initialGrams = cartItem?.quantityGrams ?? 0; // Corrected access
-  const initialUnits = cartItem?.quantityUnits ?? 0; // Corrected access
+  // Use optional chaining for safety as product properties might be optional in the type
+  const initialKg = cartItem?.quantityKg ?? 0;
+  const initialGrams = cartItem?.quantityGrams ?? 0;
+  const initialUnits = cartItem?.quantityUnits ?? 0;
 
   const [quantityKg, setQuantityKg] = useState(initialKg);
   const [quantityGrams, setQuantityGrams] = useState(initialGrams);
@@ -68,20 +55,21 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleQuantityChange = (type: 'kg' | 'grams' | 'units', delta: number) => {
     const MAX_VALUE = 900; // Define the maximum limit
 
+    // Use product.unit_type (snake_case)
     if (type === 'kg') {
-      setQuantityKg((prev: number) => {
+      setQuantityKg((prev) => {
         const newValue = prev + delta;
         // Ensure value is between 0 and MAX_VALUE
         return Math.max(0, Math.min(MAX_VALUE, newValue));
       });
     } else if (type === 'grams') {
-      setQuantityGrams((prev: number) => {
+      setQuantityGrams((prev) => {
         const newValue = prev + delta * 100;
         // Ensure value is between 0 and MAX_VALUE (grams are capped at 999)
         return Math.max(0, Math.min(MAX_VALUE, newValue));
       });
     } else if (type === 'units') {
-      setQuantityUnits((prev: number) => {
+      setQuantityUnits((prev) => {
         const newValue = prev + delta;
         // Ensure value is between 0 and MAX_VALUE
         return Math.max(0, Math.min(MAX_VALUE, newValue));
@@ -91,23 +79,24 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   // Handler for adding item to cart - increments by 1 unit/kg on each click
   const handleAddToCart = () => {
-    const { id, name, price, unitType, imageUrl } = product;
+    // Destructure using snake_case from product
+    const { id, name, price, unit_type, image_url, category, subcategory } = product;
 
     // Find the current item in the cart to get its existing quantity
-    const currentCartItem = cartItems.find(item => item.id === product.id);
+    const currentCartItem = cartItems.find(item => item.id === id);
 
     let newQuantities;
 
     if (isModified) {
       // If inputs were modified, use the current local state quantities
-      if (unitType === 'kg') {
+      if (unit_type === 'kg') { // Use snake_case
         newQuantities = {
           kg: quantityKg,
           grams: quantityGrams,
           units: undefined,
         };
         // No need to update local state here, it's already set
-      } else { // unitType === 'unit'
+      } else { // unit_type === 'unit'
         newQuantities = {
           kg: undefined,
           grams: undefined,
@@ -117,7 +106,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       }
     } else {
       // If inputs were NOT modified, increment the existing cart quantity by 1
-      if (unitType === 'kg') {
+      if (unit_type === 'kg') { // Use snake_case
         const currentKg = currentCartItem?.quantityKg ?? 0;
         const currentGrams = currentCartItem?.quantityGrams ?? 0; // Keep existing grams
 
@@ -134,7 +123,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         setQuantityKg(newKg);
         setQuantityGrams(newGrams);
 
-      } else { // unitType === 'unit'
+      } else { // unit_type === 'unit'
         const currentUnits = currentCartItem?.quantityUnits ?? 0;
         const newUnits = currentUnits + 1; // Increment units by 1
 
@@ -149,9 +138,17 @@ export default function ProductCard({ product }: ProductCardProps) {
       }
     }
 
-    // Call addToCart with the determined quantities
-    // The addToCart function in CartContext handles adding or updating
-    addToCart({ id, name, price, unitType, imageUrl }, newQuantities);
+    // Call addToCart with the determined quantities, passing snake_case props
+    // Convert image_url from null to undefined if necessary
+    addToCart({
+      id,
+      name,
+      price,
+      unitType: unit_type,
+      imageUrl: image_url ?? undefined, // Convert null to undefined
+      category,
+      subcategory
+    }, newQuantities);
 
     // Reset modification state as the local state now matches the cart state
     setIsModified(false);
@@ -169,7 +166,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   // Calculate total price based on quantity
   const calculateTotalPrice = () => {
-    if (product.unitType === 'kg') {
+    if (product.unit_type === 'kg') { // Use snake_case
       const totalKilos = quantityKg + (quantityGrams / 1000);
       return totalKilos * product.price;
     } else {
@@ -184,26 +181,26 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Main Flex container for the card content */}
       <Flex gap="2" align="start"> {/* Use string "4" */}
         {/* Image Box (Left) */}
-        <Box width="80px" height="80px" flexShrink="0" style={{ aspectRatio: '1 / 1', width: 'auto', height: 'auto', background: 'transparent', borderRadius: 'var(--radius-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}> {/* Use string "0" */}
-          {/* Use product image URL or placeholder */}
-          <Image src={product.imageUrl || '/placeholder-image.jpg'} alt={product.name} width={80} height={80} style={{ objectFit: 'cover', borderRadius: 'var(--radius-2)' }} />
+        <Box width="80px" height="80px" flexShrink="0" style={{ aspectRatio: '1 / 1', width: 'auto', height: 'auto', background: 'transparent', borderRadius: 'var(--radius-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          {/* Use product.image_url (snake_case) */}
+          <Image src={product.image_url || '/placeholder-image.jpg'} alt={product.name} width={80} height={80} style={{ objectFit: 'cover', borderRadius: 'var(--radius-2)' }} />
         </Box>
 
         {/* Center Column: Info + Quantity */}
-        <Flex direction="column" flexGrow="1" gap="1"> {/* Use string "2" */}
+        <Flex direction="column" flexGrow="1" gap="1">
           <Text size="3" weight="bold">{product.name}</Text>
           {/* Display Category and Subcategory */}
           <Text size="1" color="gray">
             {product.category}
-            {product.subcategory ? `, ${product.subcategory}` : ''} {/* Add subcategory if it exists */}
+            {product.subcategory ? `, ${product.subcategory}` : ''} {/* Add subcategory if exists */}
           </Text>
 
           {/* Quantity Inputs - Conditional Rendering */}
-          <Flex direction="column" gap="1" mt="1"> {/* Use strings "1" */}
-            {product.unitType === 'kg' ? (
+          <Flex direction="column" gap="1" mt="1">
+            {product.unit_type === 'kg' ? ( // Use snake_case
               <>
-                <Flex align="center" gap="1"> {/* Use string "2" */}
-                  <Text size="1" style={{ width: '52px' }}>Kilos</Text> {/* Fixed width for alignment */}
+                <Flex align="center" gap="1">
+                  <Text size="1" style={{ width: '52px' }}>Kilos</Text>
                   <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('kg', -1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><MinusIcon /></IconButton>
                   <TextField.Root
                     size="1"
@@ -212,18 +209,17 @@ export default function ProductCard({ product }: ProductCardProps) {
                     value={String(quantityKg)}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // Allow empty string or numbers up to 3 digits
                       if (value === '' || (/^\d+$/.test(value) && value.length <= 3)) {
                         setQuantityKg(parseInt(value, 10) || 0);
                       }
                     }}
                     style={{ width: '37px', textAlign: 'center' }}
-                    maxLength={3} // Add maxLength attribute for visual cue (though onChange enforces it)
+                    maxLength={3}
                   />
                   <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('kg', 1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><PlusIcon /></IconButton>
                 </Flex>
-                <Flex align="center" gap="1"> {/* Use string "2" */}
-                  <Text size="1" style={{ width: '52px' }}>Gramos</Text> {/* Fixed width for alignment */}
+                <Flex align="center" gap="1">
+                  <Text size="1" style={{ width: '52px' }}>Gramos</Text>
                   <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('grams', -1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><MinusIcon /></IconButton>
                   <TextField.Root
                     size="1"
@@ -232,20 +228,19 @@ export default function ProductCard({ product }: ProductCardProps) {
                     value={String(quantityGrams)}
                      onChange={(e) => {
                       const value = e.target.value;
-                      // Allow empty string or numbers up to 3 digits
                       if (value === '' || (/^\d+$/.test(value) && value.length <= 3)) {
                         setQuantityGrams(parseInt(value, 10) || 0);
                       }
                     }}
                     style={{ width: '37px', textAlign: 'center' }}
-                    maxLength={3} // Add maxLength attribute
+                    maxLength={3}
                   />
                   <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('grams', 1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><PlusIcon /></IconButton>
                 </Flex>
               </>
             ) : (
-              <Flex align="center" gap="1" > {/* Use string "2" */}
-                <Text size="1" style={{ width: '52px' }}>Unidades</Text> {/* Fixed width for alignment */}
+              <Flex align="center" gap="1" >
+                <Text size="1" style={{ width: '52px' }}>Unidades</Text>
                 <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('units', -1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><MinusIcon /></IconButton>
                 <TextField.Root
                   size="1"
@@ -254,13 +249,12 @@ export default function ProductCard({ product }: ProductCardProps) {
                   value={String(quantityUnits)}
                    onChange={(e) => {
                       const value = e.target.value;
-                      // Allow empty string or numbers up to 3 digits
                       if (value === '' || (/^\d+$/.test(value) && value.length <= 3)) {
                         setQuantityUnits(parseInt(value, 10) || 0);
                       }
                     }}
                   style={{ width: '40px', textAlign: 'center' }}
-                  maxLength={3} // Add maxLength attribute
+                  maxLength={3}
                  />
                 <IconButton size="1" variant="outline" onClick={() => handleQuantityChange('units', 1)} className="bg-[#FFFBF5] border border-[#EAE0CC]"><PlusIcon /></IconButton>
               </Flex>
@@ -269,10 +263,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         </Flex>
 
         {/* Right Column: Price + Button */}
-        <Flex direction="column" align="end" gap="1" justify="between" style={{ alignSelf: 'stretch' }}> {/* Reduced gap */}
+        <Flex direction="column" align="end" gap="1" justify="between" style={{ alignSelf: 'stretch' }}>
            {/* Conditionally display price unit */}
            <Text size="2" weight="medium" align="right">
-            ${product.price.toLocaleString('es-AR')} {product.unitType === 'kg' ? 'kg' : 'c/u'}
+            ${product.price.toLocaleString('es-AR')} {product.unit_type === 'kg' ? 'kg' : 'c/u'} {/* Use snake_case */}
           </Text>
           {/* Display total price if greater than 0 */}
           {totalPrice > 0 && (
