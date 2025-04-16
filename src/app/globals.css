@@ -27,29 +27,29 @@ body {
 
 /* Custom button styles for ProductCard */
 .button-comprar {
-  background-color: #FFA500 !important; /* Default orange */
+  background-color: var(--amber-10) !important; /* Default orange */
   border-color: #EAE0CC !important;
   color: white !important;
 }
 .button-comprar:hover {
-  background-color: #ffd000  !important; /* Hover orange */
+  background-color: var(--amber-8)  !important; /* Hover orange */
 }
 
 .button-comprado {
-  background-color: #00713fde !important; /* Green */
+  background-color: var(--green-10) !important; /* Green */
   color: white !important;
 }
 .button-comprado:hover {
-  background-color: #00713e !important; /* Slightly darker green for hover */
+  background-color: var(--green-11) !important; /* Slightly darker green for hover */
 }
 
 .button-modificar {
-  background-color: #00371ede !important; /* Blue */
+  background-color: var(--green-12)  !important; /* Blue */
   border-color: #EAE0CC !important;
   color: white !important;
 }
 .button-modificar:hover {
-  background-color: #002c18 !important; /* Slightly darker blue for hover */
+  background-color: var(--green-11) !important; /* Slightly darker blue for hover */
 }
 
 /* Animated button styles */

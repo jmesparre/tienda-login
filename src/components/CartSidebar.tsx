@@ -110,13 +110,13 @@ export default function CartSidebar() {
                     <Box flexGrow="1">
                       <Text
                         size="2"
-                        
+                        weight="bold"
                         onClick={() => {
                           setHeaderSearchTerm(item.name);
                           closeCart();
                         }}
                         style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'var(--gray-a8)' }} // Add pointer and underline on hover
-                        onMouseEnter={(e) => (e.currentTarget.style.textDecorationColor = 'var(--accent-9)')} // Change underline color on hover
+                        onMouseEnter={(e) => (e.currentTarget.style.textDecorationColor = 'var(--green-11)')} // Change underline color on hover
                         onMouseLeave={(e) => (e.currentTarget.style.textDecorationColor = 'var(--gray-a8)')} // Revert underline color
                       >
                         {item.name}
