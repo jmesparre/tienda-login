@@ -1,10 +1,12 @@
 import '@radix-ui/themes/styles.css';
 import { Theme } from '@radix-ui/themes';
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono} from "next/font/google";
 import { CartProvider } from '@/context/CartContext'; // Import CartProvider
 import CartSidebar from '@/components/CartSidebar'; // Import CartSidebar
 import "./globals.css";
+
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

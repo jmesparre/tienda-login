@@ -28,6 +28,7 @@ interface CartContextType {
   isCartOpen: boolean; // Add sidebar state
   openCart: () => void; // Add function to open
   closeCart: () => void; // Add function to close
+  cartResetCounter: number; // Add a counter to signal cart resets
 }
 
 // Create the context with a default value
@@ -37,10 +38,10 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 interface CartProviderProps {
   children: ReactNode;
 }
-
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartResetCounter, setCartResetCounter] = useState(0); // State for reset signal
 
   // Load cart from localStorage on initial mount
   useEffect(() => {
@@ -130,6 +131,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const clearCart = () => {
     setCartItems([]); // Set cart to empty array
+    setCartResetCounter(prev => prev + 1); // Increment counter to signal reset
   };
 
   // Calculate total number of distinct items in cart
@@ -165,6 +167,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     isCartOpen,
     openCart,
     closeCart,
+    cartResetCounter, // Expose the counter
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

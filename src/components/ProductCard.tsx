@@ -1,4 +1,4 @@
-import { Box, Card, Flex, Text, Button, TextField, IconButton } from '@radix-ui/themes';
+import { Box, Card, Flex, Text, Button, TextField, IconButton, Badge } from '@radix-ui/themes'; // Added Badge
 import Image from 'next/image'; // Using next/image for potential optimization
 import { PlusIcon, MinusIcon } from '@radix-ui/react-icons';
 import { useState, useEffect } from 'react'; // Import useState and useEffect
@@ -13,8 +13,8 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  // Get addToCart, cartItems, and removeFromCart from context
-  const { addToCart, cartItems, removeFromCart } = useCart();
+  // Get addToCart, cartItems, removeFromCart, and cartResetCounter from context
+  const { addToCart, cartItems, removeFromCart, cartResetCounter } = useCart();
 
   // Find if the current product is in the cart
   const cartItem = cartItems.find(item => item.id === product.id);
@@ -49,6 +49,19 @@ export default function ProductCard({ product }: ProductCardProps) {
     setIsModified(modified);
     // Rerun effect if local quantities or initial (cart) quantities change
   }, [quantityKg, quantityGrams, quantityUnits, initialKg, initialGrams, initialUnits, isInCart]);
+
+  // Effect to reset quantities when the cart is cleared externally
+  useEffect(() => {
+    // Only reset if the counter has actually been incremented (i.e., cart was cleared)
+    // This prevents resetting on initial component mount when counter is 0
+    if (cartResetCounter > 0) {
+      setQuantityKg(0);
+      setQuantityGrams(0);
+      setQuantityUnits(0);
+      setIsModified(false); // Also reset modification status
+    }
+    // Dependency array includes the counter
+  }, [cartResetCounter]);
 
 
   // Handlers for quantity changes
@@ -164,13 +177,14 @@ export default function ProductCard({ product }: ProductCardProps) {
     setIsModified(false); // Reset modification state as well
   };
 
-  // Calculate total price based on quantity
+  // Calculate total price based on quantity, considering promotional price
   const calculateTotalPrice = () => {
+    const priceToUse = product.promotion_price && product.promotion_price > 0 ? product.promotion_price : product.price;
     if (product.unit_type === 'kg') { // Use snake_case
       const totalKilos = quantityKg + (quantityGrams / 1000);
-      return totalKilos * product.price;
+      return totalKilos * priceToUse;
     } else {
-      return quantityUnits * product.price;
+      return quantityUnits * priceToUse;
     }
   };
 
@@ -181,7 +195,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Main Flex container for the card content */}
       <Flex gap="2" align="start"> {/* Use string "4" */}
         {/* Image Box (Left) */}
-        <Box width="80px" height="80px" flexShrink="0" style={{ aspectRatio: '1 / 1', width: 'auto', height: 'auto', background: 'transparent', borderRadius: 'var(--radius-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <Box width="80px" height="80px" flexShrink="0" style={{ aspectRatio: '1 / 1', width: 'auto', height: 'auto', background: 'transparent', borderRadius: 'var(--radius-2)', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
           {/* Use product.image_url (snake_case) */}
           <Image src={product.image_url || '/placeholder-image.jpg'} alt={product.name} width={80} height={80} style={{ objectFit: 'cover', borderRadius: 'var(--radius-2)' }} />
         </Box>
@@ -263,14 +277,34 @@ export default function ProductCard({ product }: ProductCardProps) {
         </Flex>
 
         {/* Right Column: Price + Button */}
-        <Flex direction="column" align="end" gap="1" justify="between" style={{ alignSelf: 'stretch' }}>
-           {/* Conditionally display price unit */}
-           <Text size="2" weight="medium" align="right">
-            ${product.price.toLocaleString('es-AR')} {product.unit_type === 'kg' ? 'kg' : 'c/u'} {/* Use snake_case */}
-          </Text>
+        <Flex direction="column" align="end" className='price-column' style={{ alignSelf: 'stretch' }}>
+          {/* Price Display Area */}
+          <Flex direction="column" align="end" gap="0"> {/* Reduced gap */}
+            {product.promotion_price && product.promotion_price > 0 ? (
+              <>
+                {/* Offer Price Row */}
+                <Flex align="center" gap="1">
+                   <Image src="/ofertas.svg" alt="Oferta" width={30} height={30} className='oferta-badge'/> {/* Offer Badge */}
+                   <Text size="2" weight="bold"  align="right"> {/* Offer Price */}
+                     ${product.promotion_price.toLocaleString('es-AR')} {product.unit_type === 'kg' ? 'kg' : 'c/u'}
+                   </Text>
+                </Flex>
+                {/* Original Price (Strikethrough) */}
+                <Text size="1" color="gray" align="right" style={{ textDecoration: 'line-through' }}>
+                  ${product.price.toLocaleString('es-AR')} {product.unit_type === 'kg' ? 'kg' : ''} {/* Show unit only for kg on original? Optional */}
+                </Text>
+              </>
+            ) : (
+              /* Regular Price */
+              <Text size="2" weight="medium" align="right">
+                ${product.price.toLocaleString('es-AR')} {product.unit_type === 'kg' ? 'kg' : 'c/u'}
+              </Text>
+            )}
+          </Flex>
+
           {/* Display total price if greater than 0 */}
           {totalPrice > 0 && (
-            <Text size="2" weight="bold" color="green" align="right"> {/* Increased size and added color */}
+            <Text size="1" weight="bold" color="green" align="right" mt="0"> {/* Increased size, added color, added margin top */}
               ${totalPrice.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           )}

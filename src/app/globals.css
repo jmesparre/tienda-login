@@ -54,8 +54,9 @@ body {
 
 /* Animated button styles */
 .btn-animated {
-  position: relative; /* Needed for absolute positioning of ::after */
+  position: absolute; /* Needed for absolute positioning of ::after */
   transition: all 0.8s;
+  bottom: 14px;
   width: 90px;
   cursor: pointer;
 }
@@ -133,4 +134,24 @@ input.rt-TextFieldInput {
 
 .pointer {
   cursor: pointer;
+  transition: 2s;
+
+}
+
+.rt-r-ai-start {
+  min-height: 104px;
+}
+
+.oferta-badge {
+  position: absolute;
+  left: 16px;
+  top:16px;
+}
+
+.pointer:hover {
+  text-decoration: underline!important;
+}
+
+.price-column {
+  min-width: 90px;
 }
