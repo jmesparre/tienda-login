@@ -1,4 +1,4 @@
-import { Box, Card, Flex, Text, Button, TextField, IconButton, Badge } from '@radix-ui/themes'; // Added Badge
+import { Box, Card, Flex, Text, Button, TextField, IconButton } from '@radix-ui/themes'; // Added Badge
 import Image from 'next/image'; // Using next/image for potential optimization
 import { PlusIcon, MinusIcon } from '@radix-ui/react-icons';
 import { useState, useEffect } from 'react'; // Import useState and useEffect
