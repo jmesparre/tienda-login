@@ -155,3 +155,15 @@ input.rt-TextFieldInput {
 .price-column {
   min-width: 90px;
 }
+
+button.rt-reset.rt-SelectTrigger.rt-r-size-2.rt-variant-surface {
+  background-color: #fff6d6ff;
+}
+
+.filtros-productos {
+  margin-top: -38px;
+}
+
+.bg-sort {
+  background-color: #fff6d6ff;
+}

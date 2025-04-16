@@ -54,6 +54,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [editedPrices, setEditedPrices] = useState<Record<number, string>>({});
   const [modifiedPrices, setModifiedPrices] = useState<Record<number, boolean>>({});
   const [updatingPriceId, setUpdatingPriceId] = useState<number | null>(null); // State for local loading
+  // State for inline offer price editing
+  const [editedOfferPrices, setEditedOfferPrices] = useState<Record<number, string>>({});
+  const [modifiedOfferPrices, setModifiedOfferPrices] = useState<Record<number, boolean>>({});
+  const [updatingOfferPriceId, setUpdatingOfferPriceId] = useState<number | null>(null); // State for local offer price loading
   const [isUpdatingProduct, setIsUpdatingProduct] = useState(false); // State for modal update loading
 
 
@@ -158,6 +162,56 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setUpdatingPriceId(null); // Clear local loading indicator
     }
   };
+
+  // --- Handle Inline Offer Price Change ---
+  const handleOfferPriceChange = (productId: number, value: string) => {
+    setEditedOfferPrices(prev => ({ ...prev, [productId]: value }));
+    setModifiedOfferPrices(prev => ({ ...prev, [productId]: true }));
+  };
+
+  // --- Handle Inline Offer Price Save ---
+  const handleUpdateOfferPrice = async (productId: number) => {
+    const newOfferPriceString = editedOfferPrices[productId];
+    // Allow empty string to represent null/no offer
+    const newOfferPrice = newOfferPriceString === '' ? null : parseFloat(newOfferPriceString);
+
+    if (newOfferPriceString !== '' && (isNaN(newOfferPrice as number) || (newOfferPrice as number) < 0)) {
+      setError(`Precio de oferta inválido para el producto ID ${productId}.`);
+      return;
+    }
+
+    console.log(`Updating offer price for product ${productId} to ${newOfferPrice}`);
+    setUpdatingOfferPriceId(productId); // Set local loading indicator for this row
+    setError(null);
+
+    try {
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ promotion_price: newOfferPrice }) // Use snake_case for DB
+        .match({ id: productId });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      console.log('Offer price updated successfully for product:', productId);
+      // Update local state
+      setProducts(prevProducts =>
+        prevProducts.map(p =>
+          p.id === productId ? { ...p, promotionPrice: newOfferPrice } : p
+        )
+      );
+      // Reset modification status for this product
+      setModifiedOfferPrices(prev => ({ ...prev, [productId]: false }));
+
+    } catch (err: unknown) {
+      console.error("Error updating offer price:", err);
+      setError(`Error al actualizar el precio de oferta para el producto ID ${productId}.`);
+    } finally {
+      setUpdatingOfferPriceId(null); // Clear local loading indicator
+    }
+  };
+
 
   // --- Fetch products on component mount ---
   useEffect(() => {
@@ -911,9 +965,32 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                  {/* Display unit */}
                  {product.unitType === 'kg' ? 'kg' : 'c/u'}
               </Table.Cell>
+              {/* Editable Offer Price Cell */}
               <Table.Cell>
-                {/* Display promo price, inline editing removed */}
-                {product.promotionPrice ? `$${product.promotionPrice.toFixed(2)}` : '-'}
+                <Flex align="center" gap="2">
+                  <TextField.Root
+                    size="1"
+                    type="number"
+                    placeholder="-"
+                    // Use edited offer price or original (handling null)
+                    value={editedOfferPrices[product.id] ?? (product.promotionPrice !== null ? product.promotionPrice.toString() : '')}
+                    onChange={(e) => handleOfferPriceChange(product.id, e.target.value)}
+                    style={{ width: '80px' }} // Adjust width as needed
+                  />
+                  {modifiedOfferPrices[product.id] && ( // Show save button only if modified
+                    <Tooltip content="Guardar oferta">
+                        <IconButton
+                            size="1"
+                            variant="soft"
+                            color="green"
+                            onClick={() => handleUpdateOfferPrice(product.id)}
+                            disabled={updatingOfferPriceId === product.id} // Disable only this button while updating
+                        >
+                            <CheckIcon />
+                        </IconButton>
+                    </Tooltip>
+                  )}
+                </Flex>
               </Table.Cell>
               <Table.Cell>
                 <Flex gap="2">

@@ -9,12 +9,13 @@ import { Product as ProductType } from '@/lib/categories'; // Import the shared 
 
 interface ProductGridProps {
   selectedCategory: string;
-  selectedSubcategory: string; // Add selectedSubcategory prop
-  searchTerm: string; // Add searchTerm prop
+  selectedSubcategory: string;
+  searchTerm: string;
+  sortOption: string; // Add sortOption prop
 }
 
-export default function ProductGrid({ selectedCategory, selectedSubcategory, searchTerm }: ProductGridProps) { // Add selectedSubcategory
-  const [products, setProducts] = useState<ProductType[]>([]); // Use ProductType
+export default function ProductGrid({ selectedCategory, selectedSubcategory, searchTerm, sortOption }: ProductGridProps) {
+  const [products, setProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,8 +77,36 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
 
   // Finally, apply subcategory filter
   const filteredProducts = selectedSubcategory === 'Todo' || !selectedSubcategory
-    ? categoryFilteredProducts // If 'Todo' or no subcategory selected, show all from category
+    ? categoryFilteredProducts
     : categoryFilteredProducts.filter(product => product.subcategory === selectedSubcategory);
+
+  // Apply sorting based on sortOption
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    const priceA = a.promotion_price ?? a.price;
+    const priceB = b.promotion_price ?? b.price;
+    const hasOfferA = a.promotion_price != null && a.promotion_price > 0;
+    const hasOfferB = b.promotion_price != null && b.promotion_price > 0;
+
+    switch (sortOption) {
+      case 'alfabetico':
+        return a.name.localeCompare(b.name);
+      case 'menor-precio':
+        return priceA - priceB;
+      case 'mayor-precio':
+        return priceB - priceA;
+      case 'ofertas':
+        if (hasOfferA && !hasOfferB) return -1; // Offer A comes first
+        if (!hasOfferA && hasOfferB) return 1;  // Offer B comes first
+        // If both have offers or both don't, sort alphabetically (or by price, etc.)
+        return a.name.localeCompare(b.name);
+      default:
+        return 0;
+    }
+  });
+
+  // No need to filter separately for 'ofertas' anymore, sorting handles prioritization
+  const finalProducts = sortedProducts;
+
 
   if (loading) {
     return <Flex justify="center" p="4"><Text className='pt-8'>Cargando productos...</Text></Flex>;
@@ -87,14 +116,15 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
     return <Flex justify="center" p="4"><Text color="red">{error}</Text></Flex>;
   }
 
-  if (filteredProducts.length === 0) {
+  if (finalProducts.length === 0) {
+      // Simplified message as 'ofertas' now shows all products if none have offers
       return <Flex justify="center" p="4"><Text className='pt-8'>No se encontraron productos.</Text></Flex>;
   }
 
   return (
     <Grid columns={{ initial: '1', sm: '2', lg: '3' }} gap="3" width="auto">
-      {filteredProducts.map((product) => (
-        <ProductCard key={product.id} product={product} /> // Pass the product directly
+      {finalProducts.map((product) => (
+        <ProductCard key={product.id} product={product} />
       ))}
     </Grid>
   );

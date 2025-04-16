@@ -1,15 +1,16 @@
 "use client"; // Mark as a Client Component for state management
 
 import { useState, useCallback } from 'react'; // Import useCallback
-import { Flex } from '@radix-ui/themes';
+import { Flex, Select, Text } from '@radix-ui/themes'; // Import Select and Text
 import Header from '@/components/Header'; // Import the Header component
 import CategoryFilters from '@/components/CategoryFilters'; // Import CategoryFilters
 import ProductGrid from '@/components/ProductGrid'; // Import ProductGrid
 
 export default function Home() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('Todo'); // Default to 'Todo'
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('Todo'); // Add state for subcategory
-  const [searchTerm, setSearchTerm] = useState<string>(''); // Add state for search term
+  const [selectedCategory, setSelectedCategory] = useState<string>('Todo');
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('Todo');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [sortOption, setSortOption] = useState<string>('alfabetico'); // Add state for sort option
 
   // Function to reset filters
   const handleResetFilters = useCallback(() => {
@@ -35,14 +36,29 @@ export default function Home() {
         selectedCategory={selectedCategory} // Pass the selected category state
         selectedSubcategory={selectedSubcategory} // Pass selected subcategory state
         onSelectCategory={handleSelectCategory} // Pass the updated handler
-        onSelectSubcategory={setSelectedSubcategory} // Pass the subcategory setter
-      /> {/* Pass category and subcategory state handlers */}
+        onSelectSubcategory={setSelectedSubcategory}
+      />
       <Flex direction="column" gap="4" p="4">
+        {/* Add Sort Dropdown */}
+        <Flex justify="end" align="center" gap="2" className='filtros-productos' >
+           <Text size="2" weight="medium">Ordenar por:</Text>
+           <Select.Root value={sortOption} onValueChange={setSortOption}>
+            <Select.Trigger placeholder="Seleccionar orden..." />
+            <Select.Content className='bg-sort'>
+              <Select.Item value="alfabetico">Alfabético (A-Z)</Select.Item>
+              <Select.Item value="menor-precio">Menor Precio</Select.Item>
+              <Select.Item value="mayor-precio">Mayor Precio</Select.Item>
+              <Select.Item value="ofertas">Ofertas</Select.Item>
+            </Select.Content>
+          </Select.Root>
+        </Flex>
+
         <ProductGrid
           selectedCategory={selectedCategory}
-          selectedSubcategory={selectedSubcategory} // Pass selected subcategory
+          selectedSubcategory={selectedSubcategory}
           searchTerm={searchTerm}
-        /> {/* Pass selected category, subcategory and search term */}
+          sortOption={sortOption} // Pass sortOption state
+        />
       </Flex>
     </main>
   );
