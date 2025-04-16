@@ -1,24 +1,22 @@
   import { Box, Flex, Text, TextField, IconButton } from '@radix-ui/themes'; // Added IconButton
 import { MagnifyingGlassIcon, Cross2Icon } from '@radix-ui/react-icons'; // Added Cross2Icon
-import type { Dispatch, SetStateAction } from 'react'; // Import types
 import { useCart } from '@/context/CartContext'; // Import useCart
 import Image from 'next/image';
 
 interface HeaderProps {
-  searchTerm: string;
-  onSearchTermChange: Dispatch<SetStateAction<string>>;
-  onResetFilters: () => void; // Add prop for resetting filters
+  // Remove searchTerm and onSearchTermChange
+  onResetFilters: () => void; // Keep prop for resetting filters
 }
 
-export default function Header({ searchTerm, onSearchTermChange, onResetFilters }: HeaderProps) {
-  const { getCartTotalItems, openCart } = useCart(); // Get cart count and open function
+export default function Header({ onResetFilters }: HeaderProps) { // Remove unused props
+  const { getCartTotalItems, openCart, headerSearchTerm, setHeaderSearchTerm } = useCart(); // Get cart count, open function, search term state and setter
   const totalItems = getCartTotalItems(); // Calculate total items
 
   return (
     <Flex align="center" justify="between" gap="4" p="4"> {/* Removed borderBottom style */}
       {/* Logo Placeholder - Add onClick handler */}
       <Box onClick={() => {
-        onSearchTermChange(''); // Clear search term
+        setHeaderSearchTerm(''); // Clear search term using context setter
         onResetFilters(); // Reset category filter
       }}>
         <Image
@@ -35,17 +33,17 @@ export default function Header({ searchTerm, onSearchTermChange, onResetFilters 
         <TextField.Root
           placeholder="Buscar…"
           size="3"
-          value={searchTerm}
+          value={headerSearchTerm} // Use context state for value
           className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
-          onChange={(e) => onSearchTermChange(e.target.value)} // Update state on change
+          onChange={(e) => setHeaderSearchTerm(e.target.value)} // Update context state on change
         >
            <TextField.Slot>
              <MagnifyingGlassIcon height="16" width="16" />
            </TextField.Slot>
            {/* Add clear button slot */}
-           {searchTerm && (
+           {headerSearchTerm && ( // Check context state
               <TextField.Slot>
-                  <IconButton size="1" variant="ghost" color="gray" onClick={() => onSearchTermChange('')} style={{ cursor: 'pointer' }}>
+                  <IconButton size="1" variant="ghost" color="gray" onClick={() => setHeaderSearchTerm('')} style={{ cursor: 'pointer' }}> {/* Use context setter */}
                       <Cross2Icon height="14" width="14" />
                   </IconButton>
               </TextField.Slot>

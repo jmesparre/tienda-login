@@ -63,25 +63,27 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
     fetchProducts();
   }, []); // Empty dependency array means this runs once on mount
 
-  // Apply search filter first (case-insensitive)
+  // 1. Filter by Category and Subcategory on the original products list
+  const categoryFilteredProducts = selectedCategory === 'Todo'
+    ? products
+    : products.filter(product => product.category === selectedCategory);
+
+  const subcategoryFilteredProducts = selectedSubcategory === 'Todo' || !selectedSubcategory
+    ? categoryFilteredProducts
+    : categoryFilteredProducts.filter(product => product.subcategory === selectedSubcategory);
+
+  // 2. Filter by Search Term independently on the original products list
   const searchedProducts = searchTerm
     ? products.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : products;
+    : []; // Use an empty array if no search term, to default to category filters
 
-  // Then, apply category filter
-  const categoryFilteredProducts = selectedCategory === 'Todo'
-    ? searchedProducts
-    : searchedProducts.filter(product => product.category === selectedCategory);
+  // 3. Determine the final list: Use search results if searchTerm exists, otherwise use category/subcategory filters
+  const productsToDisplay = searchTerm ? searchedProducts : subcategoryFilteredProducts;
 
-  // Finally, apply subcategory filter
-  const filteredProducts = selectedSubcategory === 'Todo' || !selectedSubcategory
-    ? categoryFilteredProducts
-    : categoryFilteredProducts.filter(product => product.subcategory === selectedSubcategory);
-
-  // Apply sorting based on sortOption
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
+  // 4. Apply sorting based on sortOption to the determined list
+  const sortedProducts = [...productsToDisplay].sort((a, b) => {
     const priceA = a.promotion_price ?? a.price;
     const priceB = b.promotion_price ?? b.price;
     const hasOfferA = a.promotion_price != null && a.promotion_price > 0;

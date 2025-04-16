@@ -5,8 +5,8 @@ import { Cross1Icon, TrashIcon } from '@radix-ui/react-icons';
 import { useCart } from '@/context/CartContext';
 
 export default function CartSidebar() {
-  // Add clearCart to the destructured hook
-  const { cartItems, isCartOpen, closeCart, removeFromCart, getCartTotalPrice, clearCart } = useCart();
+  // Add clearCart and setHeaderSearchTerm to the destructured hook
+  const { cartItems, isCartOpen, closeCart, removeFromCart, getCartTotalPrice, clearCart, setHeaderSearchTerm } = useCart();
 
   if (!isCartOpen) {
     return null; // Don't render if closed
@@ -106,12 +106,24 @@ export default function CartSidebar() {
 
                 return (
                   <Flex key={item.id} gap="3" align="center">
-                    {/* Basic item info */}
+                    {/* Basic item info - Make title clickable */}
                     <Box flexGrow="1">
-                    <Text size="2" weight="bold">{item.name}</Text>
-                    <Text size="1" color="gray" as="div">
-                      {item.unitType === 'kg'
-                        ? `${item.quantityKg ?? 0} kg ${item.quantityGrams ?? 0} gr`
+                      <Text
+                        size="2"
+                        
+                        onClick={() => {
+                          setHeaderSearchTerm(item.name);
+                          closeCart();
+                        }}
+                        style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'var(--gray-a8)' }} // Add pointer and underline on hover
+                        onMouseEnter={(e) => (e.currentTarget.style.textDecorationColor = 'var(--accent-9)')} // Change underline color on hover
+                        onMouseLeave={(e) => (e.currentTarget.style.textDecorationColor = 'var(--gray-a8)')} // Revert underline color
+                      >
+                        {item.name}
+                      </Text>
+                      <Text size="1" color="gray" as="div">
+                        {item.unitType === 'kg'
+                          ? `${item.quantityKg ?? 0} kg ${item.quantityGrams ?? 0} gr`
                           : `${item.quantityUnits ?? 0} u.`}
                       </Text>
                     </Box>

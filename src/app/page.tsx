@@ -5,19 +5,21 @@ import { Flex, Select, Text } from '@radix-ui/themes'; // Import Select and Text
 import Header from '@/components/Header'; // Import the Header component
 import CategoryFilters from '@/components/CategoryFilters'; // Import CategoryFilters
 import ProductGrid from '@/components/ProductGrid'; // Import ProductGrid
+import { useCart } from '@/context/CartContext'; // Import useCart
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string>('Todo');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('Todo');
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  // const [searchTerm, setSearchTerm] = useState<string>(''); // Remove local state
   const [sortOption, setSortOption] = useState<string>('alfabetico'); // Add state for sort option
+  const { headerSearchTerm, setHeaderSearchTerm } = useCart(); // Get search term from context
 
   // Function to reset filters
   const handleResetFilters = useCallback(() => {
     setSelectedCategory('Todo');
     setSelectedSubcategory('Todo'); // Reset subcategory as well
-    setSearchTerm(''); // Optionally reset search term too
-  }, []); // Use useCallback for stability
+    setHeaderSearchTerm(''); // Reset search term using context setter
+  }, [setHeaderSearchTerm]); // Add setter to dependency array
 
   // Handler for selecting a category, resets subcategory
   const handleSelectCategory = useCallback((category: string) => {
@@ -28,10 +30,9 @@ export default function Home() {
   return (
     <main>
       <Header
-        searchTerm={searchTerm}
-        onSearchTermChange={setSearchTerm}
+        // Remove searchTerm and onSearchTermChange props
         onResetFilters={handleResetFilters} // Pass the reset function
-      /> {/* Pass search state and reset handler */}
+      /> {/* Pass only reset handler */}
       <CategoryFilters
         selectedCategory={selectedCategory} // Pass the selected category state
         selectedSubcategory={selectedSubcategory} // Pass selected subcategory state
@@ -56,7 +57,7 @@ export default function Home() {
         <ProductGrid
           selectedCategory={selectedCategory}
           selectedSubcategory={selectedSubcategory}
-          searchTerm={searchTerm}
+          searchTerm={headerSearchTerm} // Pass context search term
           sortOption={sortOption} // Pass sortOption state
         />
       </Flex>

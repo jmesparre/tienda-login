@@ -29,6 +29,8 @@ interface CartContextType {
   openCart: () => void; // Add function to open
   closeCart: () => void; // Add function to close
   cartResetCounter: number; // Add a counter to signal cart resets
+  headerSearchTerm: string; // Add state for header search term
+  setHeaderSearchTerm: (term: string) => void; // Add setter for search term
 }
 
 // Create the context with a default value
@@ -42,6 +44,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartResetCounter, setCartResetCounter] = useState(0); // State for reset signal
+  const [headerSearchTerm, setHeaderSearchTerm] = useState(''); // Add state for search term
 
   // Load cart from localStorage on initial mount
   useEffect(() => {
@@ -168,6 +171,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     openCart,
     closeCart,
     cartResetCounter, // Expose the counter
+    headerSearchTerm, // Expose search term state
+    setHeaderSearchTerm, // Expose search term setter
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
