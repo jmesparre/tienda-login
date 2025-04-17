@@ -1,5 +1,4 @@
 import { Flex, Button } from '@radix-ui/themes';
-import type { Dispatch, SetStateAction } from 'react';
 import clsx from 'clsx'; // Utility for conditionally joining class names
 import { mainCategories, getSubcategories } from '@/lib/categories'; // Import categories data
 
