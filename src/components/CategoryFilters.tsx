@@ -7,7 +7,7 @@ interface CategoryFiltersProps {
   selectedCategory: string;
   selectedSubcategory: string; // Add prop for selected subcategory
   onSelectCategory: (category: string) => void; // Update prop type
-  onSelectSubcategory: Dispatch<SetStateAction<string>>; // Add prop for subcategory selection
+  onSelectSubcategory: (subcategory: string) => void; // Update prop type for subcategory selection
 }
 
 export default function CategoryFilters({

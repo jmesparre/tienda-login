@@ -1,10 +1,10 @@
 export const categoriesWithSubcategories: { [key: string]: string[] } = {
-  Frutas: ["Cítricos", "Bayas", "Frutas de hueso"],
-  Verdura: ["Hortalizas de hoja verde", "Verduras de raíz", "Tomates y pimientos"],
-  Carnicería: ["Carne de vacuno", "Carne de cerdo", "Carne de pollo"],
-  Fiambres: ["Jamón cocido", "Queso", "Salchichón"],
-  Almacén: ["Pastas y arroces", "Conservas", "Legumbres secas"],
-  Limpieza: ["Detergentes para la ropa", "Limpiadores multiusos", "Productos para el baño"],
+  Frutas: ["Cítricos", "Bayas", "Con carozo"],
+  Verdura: ["Hojas verdes", "De raíz", "Tomates y pimientos"],
+  Carnicería: ["Vacuno", "Cerdo", "Pollo"],
+  Fiambres: ["Jamón cocido", "Queso", "Picada"],
+  Almacén: ["Pastas y arroces", "Conservas", "Legumbres", "Lacteos" , "Tabaco" , "Golosinas"],
+  Limpieza: ["Ropa", "Multiusos", "Baño"],
   Bebidas: ["Agua", "Gaseosas", "Energizantes", "Vinos", "Licores", "Sodas", "Cervezas"],
 };
 

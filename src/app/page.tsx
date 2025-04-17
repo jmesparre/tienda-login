@@ -21,11 +21,18 @@ export default function Home() {
     setHeaderSearchTerm(''); // Reset search term using context setter
   }, [setHeaderSearchTerm]); // Add setter to dependency array
 
-  // Handler for selecting a category, resets subcategory
+  // Handler for selecting a category, resets subcategory and clears search
   const handleSelectCategory = useCallback((category: string) => {
     setSelectedCategory(category);
     setSelectedSubcategory('Todo'); // Reset subcategory when main category changes
-  }, []); // Use useCallback
+    setHeaderSearchTerm(''); // Clear search term
+  }, [setHeaderSearchTerm]); // Add setter to dependency array
+
+  // Handler for selecting a subcategory, clears search
+  const handleSelectSubcategory = useCallback((subcategory: string) => {
+    setSelectedSubcategory(subcategory);
+    setHeaderSearchTerm(''); // Clear search term
+  }, [setHeaderSearchTerm]); // Add setter to dependency array
 
   return (
     <main>
@@ -36,8 +43,8 @@ export default function Home() {
       <CategoryFilters
         selectedCategory={selectedCategory} // Pass the selected category state
         selectedSubcategory={selectedSubcategory} // Pass selected subcategory state
-        onSelectCategory={handleSelectCategory} // Pass the updated handler
-        onSelectSubcategory={setSelectedSubcategory}
+        onSelectCategory={handleSelectCategory} // Pass the updated category handler
+        onSelectSubcategory={handleSelectSubcategory} // Pass the new subcategory handler
       />
       <Flex direction="column" gap="4" p="4">
         {/* Add Sort Dropdown */}

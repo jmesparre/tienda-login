@@ -52,9 +52,34 @@ export default function Header({ onResetFilters }: HeaderProps) { // Remove unus
        </Box>
 
       {/* Cart Section - Make clickable */}
-      <Box onClick={openCart} style={{ cursor: 'pointer' }}> {/* Add onClick and pointer */}
+      {/* Added className="cart-section" to the Box */}
+      <Box onClick={openCart} style={{ cursor: 'pointer' }} className="cart-section">
         <Flex align="center" gap="2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" ><path d="m15 11-1 9"/><path d="m19 11-4-7"/><path d="M2 11h20"/><path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4"/><path d="M4.5 15.5h15"/><path d="m5 11 4-7"/><path d="m9 11 1 9"/></svg>
+          {/* Added span container for hover effect */}
+          <span className="cart-icon-container">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {/* Default state paths */}
+              <g className="cart-icon-default">
+                <path d="m15 11-1 9"/>
+                <path d="m19 11-4-7"/>
+                <path d="M2 11h20"/>
+                <path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4"/>
+                <path d="M4.5 15.5h15"/>
+                <path d="m5 11 4-7"/>
+                <path d="m9 11 1 9"/>
+              </g>
+              {/* Hover state paths */}
+              <g className="cart-icon-hover">
+                <path d="m15 11-1 9"/>
+                <path d="m19 11-0-7"/> {/* Changed path */}
+                <path d="M2 11h20"/>
+                <path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4"/>
+                <path d="M4.5 15.5h15"/>
+                <path d="m5 11 0-7"/>  {/* Changed path */}
+                <path d="m9 11 1 9"/>
+              </g>
+            </svg>
+          </span>
           <Text>Canasto ({totalItems})</Text> {/* Display dynamic count */}
         </Flex>
       </Box>

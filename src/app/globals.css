@@ -167,3 +167,31 @@ button.rt-reset.rt-SelectTrigger.rt-r-size-2.rt-variant-surface {
 .bg-sort {
   background-color: #fff6d6ff;
 }
+
+/* Cart Icon Hover Animation */
+.cart-icon-container .cart-icon-hover {
+  opacity: 0; /* Hide hover state by default */
+  transition: opacity 0.3s ease-in-out; /* Add transition for opacity */
+}
+
+.cart-icon-container .cart-icon-default {
+  opacity: 1; /* Show default state by default */
+  transition: opacity 0.3s ease-in-out; /* Add transition for opacity */
+}
+
+/* Use .cart-section:hover to trigger the animation */
+.cart-section:hover .cart-icon-hover {
+  opacity: 1; /* Show hover state on hover */
+}
+
+.cart-section:hover .cart-icon-default {
+  opacity: 0; /* Hide default state on hover */
+}
+
+/* Optional: Add transition to the paths themselves for smoother morphing if supported */
+/* Note: 'd' transition might not be fully supported in all browsers */
+/*
+.cart-icon-container svg path {
+  transition: d 0.3s ease-in-out;
+}
+*/
