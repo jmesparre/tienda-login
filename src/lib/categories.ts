@@ -2,7 +2,7 @@ export const categoriesWithSubcategories: { [key: string]: string[] } = {
   Frutas: ["Cítricos", "Bayas", "Con carozo"],
   Verdura: ["Hojas verdes", "De raíz", "Tomates y pimientos"],
   Carnicería: ["Vacuno", "Cerdo", "Pollo"],
-  Fiambres: ["Jamón cocido", "Queso", "Picada"],
+  Fiambres: ["Jamón", "Queso", "Picada"],
   Almacén: ["Pastas y arroces", "Conservas", "Legumbres", "Lacteos" , "Tabaco" , "Golosinas"],
   Limpieza: ["Ropa", "Multiusos", "Baño"],
   Bebidas: ["Agua", "Gaseosas", "Energizantes", "Vinos", "Licores", "Sodas", "Cervezas"],
