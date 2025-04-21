@@ -23,7 +23,7 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
   const [isLoadingMore, setIsLoadingMore] = useState(false); // Loading more state
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalProducts, setTotalProducts] = useState(0);
+  // Removed unused totalProducts state
   const [hasMore, setHasMore] = useState(true); // Track if more products are available
 
   const { ref, inView } = useInView({
@@ -74,7 +74,7 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
       }
 
       // Define sorting logic based on sortOption
-      let orderOptions: { column: string; ascending: boolean; nullsFirst?: boolean }[] = [];
+      const orderOptions: { column: string; ascending: boolean; nullsFirst?: boolean }[] = [];
       switch (sortOption) {
         case 'alfabetico':
           orderOptions.push({ column: 'name', ascending: true });
@@ -116,7 +116,7 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
       }
 
       // Map the fetched data to the ProductType interface
-      let mappedData = data?.map(p => ({
+      const mappedData = data?.map(p => ({
         id: p.id,
         name: p.name,
         description: p.description,
@@ -151,8 +151,7 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
 
       // Update the products state
       setProducts(prevProducts => loadMore ? [...prevProducts, ...mappedData] : mappedData);
-      // Update total products count
-      setTotalProducts(count ?? 0);
+      // Update total products count - Removed setTotalProducts as it's unused
       // Update hasMore state based on whether the total count exceeds the currently loaded items
       setHasMore((count ?? 0) > page * PRODUCTS_PER_PAGE);
       // Update current page state if loading more
@@ -165,7 +164,7 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
       console.error("Error fetching products:", err);
       setError("Error al cargar los productos. Intente de nuevo.");
       setProducts([]); // Clear products on error
-      setTotalProducts(0);
+      // Removed setTotalProducts(0) as it's unused
       setHasMore(false);
     } finally {
       // Reset loading states regardless of success or error
@@ -188,7 +187,7 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
       const nextPage = currentPage + 1;
       fetchProducts(nextPage, true); // Fetch the next page and append results
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Removed unused eslint-disable directive
   }, [inView, hasMore, isLoadingMore, loading, currentPage, fetchProducts]); // Dependencies for this effect
 
 
