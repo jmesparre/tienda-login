@@ -2,6 +2,7 @@
 import { MagnifyingGlassIcon, Cross2Icon } from '@radix-ui/react-icons'; // Added Cross2Icon
 import { useCart } from '@/context/CartContext'; // Import useCart
 import Image from 'next/image';
+import clsx from 'clsx'; // Import clsx for conditional classes
 
 interface HeaderProps {
   // Remove searchTerm and onSearchTermChange
@@ -9,7 +10,8 @@ interface HeaderProps {
 }
 
 export default function Header({ onResetFilters }: HeaderProps) { // Remove unused props
-  const { getCartTotalItems, openCart, headerSearchTerm, setHeaderSearchTerm } = useCart(); // Get cart count, open function, search term state and setter
+  // Add isCartAnimating to destructured props from useCart
+  const { getCartTotalItems, openCart, headerSearchTerm, setHeaderSearchTerm, isCartAnimating } = useCart();
   const totalItems = getCartTotalItems(); // Calculate total items
 
   return (
@@ -24,7 +26,8 @@ export default function Header({ onResetFilters }: HeaderProps) { // Remove unus
           alt="Logo La Vieja Estación"
           width={140}
           height={140}
-          style={{ display: 'inline-block', cursor: 'pointer' }} //Para que el width y height funcionen correctamente.  También puede ser flex.
+          priority // Add priority prop for LCP optimization
+          style={{ display: 'inline-block', cursor: 'pointer', height: 'auto' }} // Add height: 'auto' to maintain aspect ratio
         />
       </Box>
 
@@ -52,12 +55,16 @@ export default function Header({ onResetFilters }: HeaderProps) { // Remove unus
        </Box>
 
       {/* Cart Section - Make clickable */}
-      {/* Added className="cart-section" to the Box */}
-      <Box onClick={openCart} style={{ cursor: 'pointer' }} className="cart-section">
+      {/* Added className="cart-section" and conditional 'cart-animating' class */}
+      <Box
+        onClick={openCart}
+        style={{ cursor: 'pointer' }}
+        className={clsx('cart-section', { 'cart-animating': isCartAnimating })} // Use clsx
+      >
         <Flex align="center" gap="2">
           {/* Added span container for hover effect */}
           <span className="cart-icon-container">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
               {/* Default state paths */}
               <g className="cart-icon-default">
                 <path d="m15 11-1 9"/>

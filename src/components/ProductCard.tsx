@@ -195,9 +195,20 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Main Flex container for the card content */}
       <Flex gap="2" align="start"> {/* Use string "4" */}
         {/* Image Box (Left) */}
-        <Box width="80px" height="80px" flexShrink="0" style={{ aspectRatio: '1 / 1', width: 'auto', height: 'auto', background: 'transparent', borderRadius: 'var(--radius-2)', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+        <Box width="80px" height="80px" flexShrink="0" style={{ aspectRatio: '1 / 1', background: 'transparent', borderRadius: 'var(--radius-2)', display: 'flex', alignItems: 'center', overflow: 'hidden' }}> {/* Removed width/height auto from style */}
           {/* Use product.image_url (snake_case) */}
-          <Image src={product.image_url || '/placeholder-image.jpg'} alt={product.name} width={80} height={80} style={{ objectFit: 'cover', borderRadius: 'var(--radius-2)' }} />
+          <Image
+            src={product.image_url || '/placeholder-image.jpg'}
+            alt={product.name}
+            width={80} // Required by next/image
+            height={80} // Required by next/image
+            style={{
+              objectFit: 'cover',
+              borderRadius: 'var(--radius-2)',
+              width: '100%', // Ensure image fills container width
+              height: '100%' // Ensure image fills container height
+            }}
+          />
         </Box>
 
         {/* Center Column: Info + Quantity */}

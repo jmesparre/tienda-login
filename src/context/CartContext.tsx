@@ -31,6 +31,7 @@ interface CartContextType {
   cartResetCounter: number; // Add a counter to signal cart resets
   headerSearchTerm: string; // Add state for header search term
   setHeaderSearchTerm: (term: string) => void; // Add setter for search term
+  isCartAnimating: boolean; // Add state for cart animation trigger
 }
 
 // Create the context with a default value
@@ -45,6 +46,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartResetCounter, setCartResetCounter] = useState(0); // State for reset signal
   const [headerSearchTerm, setHeaderSearchTerm] = useState(''); // Add state for search term
+  const [isCartAnimating, setIsCartAnimating] = useState(false); // Add animation state
 
   // Load cart from localStorage on initial mount
   useEffect(() => {
@@ -120,6 +122,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       }
 
 
+      // Trigger animation if an item was added or updated positively
+      if (quantityKg > 0 || quantityGrams > 0 || quantityUnits > 0) {
+        setIsCartAnimating(true);
+        setTimeout(() => setIsCartAnimating(false), 500); // Reset after 500ms
+      }
       return newItems;
     });
      // Automatically open cart when item is added/updated? Optional.
@@ -173,6 +180,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     cartResetCounter, // Expose the counter
     headerSearchTerm, // Expose search term state
     setHeaderSearchTerm, // Expose search term setter
+    isCartAnimating, // Expose animation state
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
