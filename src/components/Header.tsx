@@ -23,7 +23,7 @@ export default function Header({ onResetFilters }: HeaderProps) { // Remove unus
       }}>
         <Image
           src="/logo.png"
-          alt="Logo La Vieja Estación"
+          alt="tienda-sanluis"
           width={140}
           height={140}
           priority // Add priority prop for LCP optimization

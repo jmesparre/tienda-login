@@ -215,7 +215,7 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
         ))}
       </Grid>
       {/* Element to observe for infinite scroll trigger */}
-      <Flex ref={ref} justify="center" align="center" p="4" style={{ minHeight: '50px' }}>
+      <Flex ref={ref} justify="center" align="center" p="9" style={{ minHeight: '50px' }}>
         {/* Show spinner when loading more products */}
         {isLoadingMore && <Spinner size="3" />}
         {/* Show message when there are no more products to load */}

@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react'; // Import useEffect
+import { useState, useEffect, useCallback } from 'react'; // Import useEffect and useCallback
 import Image from 'next/image'; // Import next/image
+import { useInView } from 'react-intersection-observer'; // Import useInView
 import { supabase } from '@/lib/supabaseClient'; // Import supabase client
 import {
   Box,
   Button,
+  Spinner, // Added Spinner
   Flex,
   Heading,
   Table,
@@ -16,7 +18,6 @@ import {
   Text, // Re-added Text
   Dialog, // Added Dialog
   Tooltip // Added Tooltip for icons
-  // Removed unused TextArea import
 } from '@radix-ui/themes';
 import { Cross1Icon, Cross2Icon, Pencil1Icon, MagnifyingGlassIcon, PlusIcon, PlayIcon, PauseIcon, CheckIcon } from '@radix-ui/react-icons';
 // Import category data and helpers
@@ -46,10 +47,17 @@ const categoriesForSelect = categoriesData.filter(c => c !== 'Todo');
 // Define available images from public folder (excluding SVGs and directories)
 const availableImages = ['/banana.png', '/aji-picante.png', '/berenjena.png', '/calabaza.png', '/cebolla.png', '/lechuga.png', '/manteca.png', '/manzana.png', '/morron.png', '/papa.png', '/pepino.png', '/pollo.png', '/queso.png', '/remolacha.png', '/uvas.png', '/cigarrillos.png', '/lata-cerveza.png', '/carne.png', '/milanesas.png', '/pañales.png', '/vino.png', '/jabon.png', '/chocolate.png'];
 
+const PRODUCTS_PER_PAGE_ADMIN = 30; // Define products per page for admin view
+
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [products, setProducts] = useState<Product[]>([]); // Initialize with empty array
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Initial loading
+  const [isLoadingMore, setIsLoadingMore] = useState(false); // Loading more state
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [hasMore, setHasMore] = useState(true); // Track if more products exist
+
   // State for inline price editing
   const [editedPrices, setEditedPrices] = useState<Record<number, string>>({});
   const [modifiedPrices, setModifiedPrices] = useState<Record<number, boolean>>({});
@@ -60,43 +68,172 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [updatingOfferPriceId, setUpdatingOfferPriceId] = useState<number | null>(null); // State for local offer price loading
   const [isUpdatingProduct, setIsUpdatingProduct] = useState(false); // State for modal update loading
 
+  // --- Component State ---
+  const [activeCategory, setActiveCategory] = useState('Todo');
+  // State for search term
+  const [searchTerm, setSearchTerm] = useState('');
+  // State for sorting
+  const [sortOrder, setSortOrder] = useState('default'); // Keep track of sort order
+  // State for Add Product Modal
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  // State for Image Selection Modal
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  // State for Edit Product Modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null); // State to hold the product being edited
+  // State for new product form
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    category: categoriesForSelect[0], // Default to first actual category
+    subcategory: '', // Add subcategory state
+    price: '',
+    unitType: 'kg',
+    promotionPrice: '',
+    imageUrl: '',
+  });
+  // State for dynamic subcategories in modals
+  const [currentSubcategories, setCurrentSubcategories] = useState<string[]>([]);
+
+
+  // --- Intersection Observer Hook ---
+  const { ref, inView } = useInView({
+    threshold: 0,
+    triggerOnce: false
+  });
 
   // --- Fetch Products Function ---
-  const fetchProducts = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error: dbError } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false }); // Order by creation date
+  const fetchProducts = useCallback(async (page: number, loadMore = false) => {
+    // Prevent fetching if already loading more or if there are no more products
+    if (loadMore && (isLoadingMore || !hasMore)) {
+      return;
+    }
 
+    // Set loading states
+    if (!loadMore) {
+      setLoading(true); // Initial load
+      setProducts([]); // Clear products for new filter/sort
+      setCurrentPage(1); // Reset page
+      setHasMore(true); // Assume more products are available
+    } else {
+      setIsLoadingMore(true); // Loading subsequent pages
+    }
+    setError(null); // Clear previous errors
+
+    try {
+      // Start building the Supabase query
+      let query = supabase
+        .from('products')
+        .select('*', { count: 'exact' }); // Select all columns and get the total count
+        // Note: is_paused filter is not applied here by default, unlike ProductGrid. Admin might want to see paused items.
+
+      // Apply category filter if not 'Todo'
+      if (activeCategory !== 'Todo') {
+        query = query.eq('category', activeCategory);
+      }
+
+      // Apply search term filter (case-insensitive)
+      if (searchTerm) {
+        query = query.ilike('name', `%${searchTerm}%`);
+      }
+
+      // Define sorting logic based on sortOrder state
+      let orderOptions: { column: string; ascending: boolean; nullsFirst?: boolean }[] = [];
+      switch (sortOrder) {
+        case 'az':
+          orderOptions.push({ column: 'name', ascending: true });
+          break;
+        case 'za':
+          orderOptions.push({ column: 'name', ascending: false });
+          break;
+        case 'price_high_low':
+           // Similar to ProductGrid, sorting by calculated price is complex.
+           // We'll sort client-side for now or use default sort.
+           // Let's use price column directly for simplicity in admin.
+           orderOptions.push({ column: 'price', ascending: false });
+          break;
+        case 'price_low_high':
+           orderOptions.push({ column: 'price', ascending: true });
+          break;
+        case 'default': // Default sort (e.g., by creation date or name)
+        default:
+          orderOptions.push({ column: 'created_at', ascending: false }); // Default: newest first
+          orderOptions.push({ column: 'name', ascending: true }); // Secondary sort by name
+      }
+
+      // Apply the determined order options to the query
+      orderOptions.forEach(opt => {
+        query = query.order(opt.column, { ascending: opt.ascending, nullsFirst: opt.nullsFirst });
+      });
+
+      // Apply pagination using range based on current page and products per page
+      const startIndex = (page - 1) * PRODUCTS_PER_PAGE_ADMIN;
+      const endIndex = startIndex + PRODUCTS_PER_PAGE_ADMIN - 1;
+      query = query.range(startIndex, endIndex);
+
+      // Execute the query
+      const { data, error: dbError, count } = await query;
+
+      // Handle potential database errors
       if (dbError) {
         throw dbError;
       }
 
-      // Map snake_case from DB to camelCase for the component state
+      // Map the fetched data to the Product interface (camelCase)
       const mappedData = data?.map(p => ({
         id: p.id,
         name: p.name,
         category: p.category,
         price: p.price,
-        unitType: p.unit_type, // Map unit_type
-        promotionPrice: p.promotion_price, // Map promotion_price
+        unitType: p.unit_type,
+        promotionPrice: p.promotion_price,
         imageUrl: p.image_url,
         createdAt: p.created_at,
         isPaused: p.is_paused,
-        subcategory: p.subcategory // Map subcategory
+        subcategory: p.subcategory
       })) || [];
 
-      setProducts(mappedData);
+      // Update the products state
+      setProducts(prevProducts => loadMore ? [...prevProducts, ...mappedData] : mappedData);
+      // Update total products count
+      setTotalProducts(count ?? 0);
+      // Update hasMore state based on whether the total count exceeds the currently loaded items
+      setHasMore((count ?? 0) > page * PRODUCTS_PER_PAGE_ADMIN);
+      // Update current page state if loading more
+      if (loadMore) {
+        setCurrentPage(page);
+      }
+
     } catch (err: unknown) {
+      // Handle errors during fetch
       console.error("Error fetching products:", err);
-      setError("Error al cargar los productos.");
+      setError("Error al cargar los productos. Intente de nuevo.");
+      setProducts([]); // Clear products on error
+      setTotalProducts(0);
+      setHasMore(false);
     } finally {
+      // Reset loading states regardless of success or error
       setLoading(false);
-     }
-  };
+      setIsLoadingMore(false);
+    }
+  // Dependencies for useCallback: re-create fetchProducts if any of these change
+  }, [activeCategory, searchTerm, sortOrder, isLoadingMore, hasMore]);
+
+  // --- Effect to load initial products or when filters/sort change ---
+  useEffect(() => {
+    // Reset and fetch page 1 whenever filters change
+    fetchProducts(1, false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCategory, searchTerm, sortOrder]); // Only trigger on filter/sort changes
+
+  // --- Effect to load more products when the observer element is in view ---
+  useEffect(() => {
+    if (inView && hasMore && !isLoadingMore && !loading) {
+      const nextPage = currentPage + 1;
+      fetchProducts(nextPage, true); // Load next page, append
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inView, hasMore, isLoadingMore, loading, currentPage, fetchProducts]); // Dependencies for loading more
+
 
   // --- Handle Inline Price Change ---
   const handlePriceChange = (productId: number, value: string) => {
@@ -213,10 +350,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   };
 
 
-  // --- Fetch products on component mount ---
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  // --- Fetch products on component mount (REMOVED - Handled by filter/sort useEffect) ---
+  // useEffect(() => {
+  //   fetchProducts(1, false); // Initial fetch is now handled by the filter/sort effect
+  // }, [fetchProducts]);
 
   // --- Edit Product Handler ---
   const handleEditProduct = (productId: number) => {
@@ -286,44 +423,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
      }
   };
 
+  // --- Filtering and Sorting Logic (REMOVED - Handled by fetchProducts) ---
+  // let filteredProducts = products.filter(product =>
+  //   product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
+  // // Apply category filter if not 'Todo'
+  // if (activeCategory !== 'Todo') {
+  //   filteredProducts = filteredProducts.filter(product => product.category === activeCategory);
+  // }
+  // // TODO: Implement sorting logic based on sortOrder state using filteredProducts
 
-  // --- Component State ---
-  const [activeCategory, setActiveCategory] = useState('Todo');
-  // State for search term
-  const [searchTerm, setSearchTerm] = useState('');
-  // State for sorting
-  const [sortOrder, setSortOrder] = useState('default');
-  // State for Add Product Modal
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  // State for Image Selection Modal
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  // State for Edit Product Modal
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null); // State to hold the product being edited
-  // State for new product form
-  const [newProduct, setNewProduct] = useState({
-    name: '',
-    category: categoriesForSelect[0], // Default to first actual category
-    subcategory: '', // Add subcategory state
-    price: '',
-    unitType: 'kg',
-    promotionPrice: '',
-    imageUrl: '',
-  });
-  // State for dynamic subcategories in modals
-  const [currentSubcategories, setCurrentSubcategories] = useState<string[]>([]);
-
-  // --- Filtering and Sorting Logic ---
-  let filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Apply category filter if not 'Todo'
-  if (activeCategory !== 'Todo') {
-    filteredProducts = filteredProducts.filter(product => product.category === activeCategory);
-  }
-
-  // TODO: Implement sorting logic based on sortOrder state using filteredProducts
 
   // Update handler to manage subcategory reset and dynamic loading
   const handleNewProductChange = (field: keyof typeof newProduct, value: string | null) => {
@@ -519,7 +628,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       {/* Header/Navbar */}
       <Flex justify="between" align="center" mb="4" p="3" style={{ borderBottom: '1px solid var(--gray-a6)' }}>
         <Heading as="h1" size="6" weight="bold">
-          La Vieja Estacion
+          Tienda San Luis
         </Heading>
         <Flex gap="4" align="center" flexGrow="1" justify="center" mx="6">
            <TextField.Root
@@ -903,23 +1012,31 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         </Table.Header>
 
         <Table.Body>
-          {loading && (
+          {/* Initial Loading Row */}
+          {loading && currentPage === 1 && (
             <Table.Row>
-              <Table.Cell colSpan={7} align="center"><Text>Cargando...</Text></Table.Cell>
+              <Table.Cell colSpan={8} align="center"> {/* Correct colSpan */}
+                <Flex justify="center" align="center" gap="2" p="4">
+                  <Spinner size="2" />
+                  <Text>Cargando productos...</Text>
+                </Flex>
+              </Table.Cell>
             </Table.Row>
           )}
+          {/* Error Row */}
           {error && (
             <Table.Row>
-              <Table.Cell colSpan={7} align="center"><Text color="red">{error}</Text></Table.Cell>
+              <Table.Cell colSpan={8} align="center"><Text color="red">{error}</Text></Table.Cell> {/* Correct colSpan */}
             </Table.Row>
           )}
-          {!loading && !error && products.length === 0 && (
+          {/* No Products Row */}
+          {!loading && !isLoadingMore && products.length === 0 && (
              <Table.Row>
-               <Table.Cell colSpan={8} align="center"><Text>No hay productos para mostrar.</Text></Table.Cell> {/* Updated colSpan */}
+               <Table.Cell colSpan={8} align="center"><Text>No se encontraron productos con los filtros actuales.</Text></Table.Cell> {/* Correct colSpan */}
              </Table.Row>
           )}
-          {/* Map over filtered products */}
-          {!loading && !error && filteredProducts.map((product) => (
+          {/* Map over products state */}
+          {products.map((product) => (
             <Table.Row key={product.id} align="center">
               {/* Image Cell */}
               <Table.Cell>
@@ -1017,6 +1134,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           ))}
         </Table.Body>
       </Table.Root>
+
+      {/* Observer element and loading indicator for more products */}
+      <Flex ref={ref} justify="center" align="center" p="4" style={{ minHeight: '60px' }}>
+        {/* Show spinner when loading more products */}
+        {isLoadingMore && <Spinner size="3" />}
+        {/* Show message when there are no more products to load */}
+        {!hasMore && products.length > 0 && !isLoadingMore && <Text>No hay más productos</Text>}
+      </Flex>
     </Box>
   );
 }

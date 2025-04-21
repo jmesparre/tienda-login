@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fff6d6ff; /* Light beige background */
+  --background: #fff0c8; /* Light beige background */
   --foreground: #4A4A4A; /* Dark brownish-grey text */
 }
 
 @theme inline {
-  --color-background: #fff6d6ff !important;
+  --color-background: #fff0c8 !important;
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -19,10 +19,20 @@
   }
 }
 
+
 body {
-  background-color: #fff6d6ff !important; /* Apply color directly */
+  background-color: #fff0c8!important; /* Apply color directly */
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+main{
+  min-height: 60vw;
+}
+
+footer {
+  background: #fceec8f5;
+  border-top: 1px solid #cec6b6;
 }
 
 /* Custom button styles for ProductCard */
@@ -100,7 +110,7 @@ body {
 
 /* Override Radix theme background */
 .radix-themes:where([data-has-background="true"]) {
-  background-color: #fff6d6ff !important;
+  background-color: #fff0c8 !important;
 }
 
 .rt-Card:where(.rt-variant-surface) {
@@ -157,7 +167,7 @@ input.rt-TextFieldInput {
 }
 
 button.rt-reset.rt-SelectTrigger.rt-r-size-2.rt-variant-surface {
-  background-color: #fff6d6ff;
+  background-color: #fff0c8;
 }
 
 .filtros-productos {
@@ -165,7 +175,7 @@ button.rt-reset.rt-SelectTrigger.rt-r-size-2.rt-variant-surface {
 }
 
 .bg-sort {
-  background-color: #fff6d6ff;
+  background-color: #fff0c8;
 }
 
 
@@ -202,10 +212,5 @@ button.rt-reset.rt-SelectTrigger.rt-r-size-2.rt-variant-surface {
   opacity: 0; /* Force hide default state when animating */
 }
 
-/* Optional: Add transition to the paths themselves for smoother morphing if supported */
-/* Note: 'd' transition might not be fully supported in all browsers */
-/*
-.cart-icon-container svg path {
-  transition: d 0.3s ease-in-out;
-}
-*/
+
+

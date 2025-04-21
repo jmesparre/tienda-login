@@ -110,7 +110,7 @@ export default function CartSidebar() {
                     <Box flexGrow="1">
                       <Text
                         size="2"
-                        weight="bold"
+                        
                         onClick={() => {
                           setHeaderSearchTerm(item.name);
                           closeCart();
