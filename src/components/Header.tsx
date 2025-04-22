@@ -24,8 +24,8 @@ export default function Header({ onResetFilters }: HeaderProps) { // Remove unus
         <Image
           src="/logo.png"
           alt="tienda-sanluis"
-          width={140}
-          height={140}
+          width={192}
+          height={70}
           priority // Add priority prop for LCP optimization
           style={{ display: 'inline-block', cursor: 'pointer', height: 'auto' }} // Add height: 'auto' to maintain aspect ratio
         />
