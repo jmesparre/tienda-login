@@ -55,7 +55,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [isLoadingMore, setIsLoadingMore] = useState(false); // Loading more state
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalProducts, setTotalProducts] = useState(0);
+  // Removed unused totalProducts state
   const [hasMore, setHasMore] = useState(true); // Track if more products exist
 
   // State for inline price editing
@@ -137,7 +137,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       }
 
       // Define sorting logic based on sortOrder state
-      let orderOptions: { column: string; ascending: boolean; nullsFirst?: boolean }[] = [];
+      const orderOptions: { column: string; ascending: boolean; nullsFirst?: boolean }[] = []; // Changed let to const
       switch (sortOrder) {
         case 'az':
           orderOptions.push({ column: 'name', ascending: true });
@@ -194,8 +194,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
       // Update the products state
       setProducts(prevProducts => loadMore ? [...prevProducts, ...mappedData] : mappedData);
-      // Update total products count
-      setTotalProducts(count ?? 0);
+      // Removed unused setTotalProducts call
       // Update hasMore state based on whether the total count exceeds the currently loaded items
       setHasMore((count ?? 0) > page * PRODUCTS_PER_PAGE_ADMIN);
       // Update current page state if loading more
@@ -208,7 +207,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       console.error("Error fetching products:", err);
       setError("Error al cargar los productos. Intente de nuevo.");
       setProducts([]); // Clear products on error
-      setTotalProducts(0);
+      // Removed setTotalProducts(0); call as the state was removed
       setHasMore(false);
     } finally {
       // Reset loading states regardless of success or error
@@ -222,8 +221,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   useEffect(() => {
     // Reset and fetch page 1 whenever filters change
     fetchProducts(1, false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCategory, searchTerm, sortOrder]); // Only trigger on filter/sort changes
+  }, [activeCategory, searchTerm, sortOrder, fetchProducts]); // Only trigger on filter/sort changes, added fetchProducts dependency
 
   // --- Effect to load more products when the observer element is in view ---
   useEffect(() => {
@@ -386,7 +384,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       }
 
       console.log('Product pause status updated successfully');
-      fetchProducts(); // Refresh the list to show the change
+      fetchProducts(1, false); // Refresh the list to show the change
 
     } catch (err: unknown) {
       console.error("Error updating product pause status:", err);
@@ -412,7 +410,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
          console.log('Product deleted successfully');
          // Refresh the product list after deletion
-         fetchProducts();
+         fetchProducts(1, false);
          // Or optimistically remove from local state:
          // setProducts(prevProducts => prevProducts.filter(p => p.id !== productId));
 
@@ -510,7 +508,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setIsAddModalOpen(false);
       // Reset form including subcategory
       setNewProduct({ name: '', category: categoriesForSelect[0], subcategory: '', price: '', unitType: 'kg', promotionPrice: '', imageUrl: '' });
-      fetchProducts();
+      fetchProducts(1, false);
 
     } catch (err: unknown) {
       console.error("Error saving product:", err);
