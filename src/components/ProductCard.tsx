@@ -249,7 +249,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                   <TextField.Root
                     size="1"
                     type="number"
-                    className="bg-[#FFFBF5] border border-[#EAE0CC]"
+                    className=""
                     value={String(quantityGrams)}
                      onChange={(e) => {
                       const value = e.target.value;
@@ -270,7 +270,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <TextField.Root
                   size="1"
                   type="number"
-                  className="bg-[#FFFBF5] border border-[#EAE0CC]"
+                  className=""
                   value={String(quantityUnits)}
                    onChange={(e) => {
                       const value = e.target.value;

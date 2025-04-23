@@ -219,7 +219,7 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
         {/* Show spinner when loading more products */}
         {isLoadingMore && <Spinner size="3" />}
         {/* Show message when there are no more products to load */}
-        {!hasMore && products.length > 0 && <Text>...</Text>}
+        {!hasMore && products.length > 0 && <Text>.</Text>}
       </Flex>
     </>
   );

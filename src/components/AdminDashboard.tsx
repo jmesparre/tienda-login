@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react'; // Import useEffect
+import { useState, useEffect, ChangeEvent } from 'react'; // Import useEffect and ChangeEvent
 import Image from 'next/image'; // Import next/image
 import { supabase } from '@/lib/supabaseClient'; // Import supabase client
+import { v4 as uuidv4 } from 'uuid'; // Import uuid for unique filenames
 import {
   Box,
   Button,
@@ -301,15 +302,23 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null); // State to hold the product being edited
   // State for new product form
-  const [newProduct, setNewProduct] = useState({
+  const [newProduct, setNewProduct] = useState<{
+    name: string;
+    category: string;
+    subcategory: string;
+    price: string;
+    unitType: 'kg' | 'unit';
+    promotionPrice: string;
+  }>({ // Explicitly type the state object
     name: '',
     category: categoriesForSelect[0], // Default to first actual category
     subcategory: '', // Add subcategory state
     price: '',
     unitType: 'kg',
     promotionPrice: '',
-    imageUrl: '',
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // State for the selected image file
+  const [isUploading, setIsUploading] = useState(false); // State for upload loading indicator
   // State for dynamic subcategories in modals
   const [currentSubcategories, setCurrentSubcategories] = useState<string[]>([]);
 
@@ -326,10 +335,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   // TODO: Implement sorting logic based on sortOrder state using filteredProducts
 
   // Update handler to manage subcategory reset and dynamic loading
-  const handleNewProductChange = (field: keyof typeof newProduct, value: string | null) => {
+  // Explicitly type the 'field' parameter to exclude 'imageUrl'
+  const handleNewProductChange = (field: keyof Omit<typeof newProduct, 'imageUrl'>, value: string | null) => {
     setNewProduct(prev => {
+      // Ensure prev is not null before spreading
+      if (!prev) return prev;
       const updatedProduct = { ...prev, [field]: value };
-
       // If category changes, reset subcategory and update available subcategories
       if (field === 'category') {
         const subcats = getSubcategories(value || '');
@@ -362,51 +373,96 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   // --- Save New Product Handler ---
   const handleSaveNewProduct = async () => {
-    console.log('Saving new product:', newProduct);
+    console.log('Saving new product:', newProduct, 'File:', selectedFile);
+    setIsUploading(true); // Start loading indicator
+    setError(null); // Clear previous errors
 
-    // Prepare data for Supabase (snake_case keys)
+    let imageUrl: string | null = null;
+    let filePath: string | null = null; // Variable to store file path for potential deletion on error
+
+    // 1. Upload image if selected
+    if (selectedFile) {
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`; // Generate unique filename
+      filePath = `public/${fileName}`; // Define storage path (e.g., in a 'public' folder within the bucket)
+
+      try {
+        const { error: uploadError } = await supabase.storage
+          .from('imagenes-productos') // Use your bucket name
+          .upload(filePath, selectedFile);
+
+        if (uploadError) {
+          throw new Error(`Error uploading image: ${uploadError.message}`);
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('imagenes-productos')
+          .getPublicUrl(filePath);
+
+        if (!urlData || !urlData.publicUrl) {
+            throw new Error('Could not get public URL for uploaded image.');
+        }
+        imageUrl = urlData.publicUrl;
+        console.log('Image uploaded successfully:', imageUrl);
+
+      } catch (uploadErr: any) {
+        console.error("Error during image upload:", uploadErr);
+        setError(`Error al subir la imagen: ${uploadErr.message}`);
+        setIsUploading(false); // Stop loading on upload error
+        return; // Stop the process if upload fails
+      }
+    }
+
+    // 2. Prepare product data for insertion (including the image URL)
     const productToInsert = {
       name: newProduct.name,
       category: newProduct.category,
-      subcategory: newProduct.subcategory === 'Todo' || newProduct.subcategory === '' ? null : newProduct.subcategory, // Save null if 'Todo' or empty
+      subcategory: newProduct.subcategory === 'Todo' || newProduct.subcategory === '' ? null : newProduct.subcategory,
       price: parseFloat(newProduct.price) || 0,
       unit_type: newProduct.unitType,
       promotion_price: newProduct.promotionPrice ? parseFloat(newProduct.promotionPrice) : null,
-      image_url: newProduct.imageUrl || null,
+      image_url: imageUrl, // Use the uploaded image URL or null
     };
 
-    // Validate required fields (basic example)
+    // 3. Validate required fields
     if (!productToInsert.name || !productToInsert.category || !productToInsert.price || !productToInsert.unit_type) {
-        setError("Por favor complete todos los campos requeridos (Nombre, Categoría, Precio, Unidad).");
-        return; // Prevent insertion
+      setError("Por favor complete todos los campos requeridos (Nombre, Categoría, Precio, Unidad).");
+      setIsUploading(false); // Stop loading
+      return;
     }
-    // Optional: Validate subcategory if category requires it
-    if (getSubcategories(productToInsert.category).length > 0 && !productToInsert.subcategory) {
-        // Allow saving without subcategory (treat as 'Todo'), or enforce selection:
-        // setError(`La categoría '${productToInsert.category}' requiere una subcategoría.`);
-        // return;
-    }
+    // Optional: Validate subcategory
+    // ... (validation logic remains the same)
 
+    // 4. Insert product data into the database
     try {
       const { data, error: insertError } = await supabase
         .from('products')
         .insert([productToInsert])
-        .select(); // Select the inserted data
+        .select();
 
       if (insertError) {
+        // Attempt to delete the uploaded image if DB insert fails
+        if (imageUrl && filePath) {
+            console.warn("DB insert failed, attempting to delete uploaded image:", filePath);
+            await supabase.storage.from('imagenes-productos').remove([filePath]);
+        }
         throw insertError;
       }
 
       console.log('Product saved successfully:', data);
       setIsAddModalOpen(false);
-      // Reset form including subcategory
-      setNewProduct({ name: '', category: categoriesForSelect[0], subcategory: '', price: '', unitType: 'kg', promotionPrice: '', imageUrl: '' });
+      // Reset form and selected file
+      setNewProduct({ name: '', category: categoriesForSelect[0], subcategory: '', price: '', unitType: 'kg', promotionPrice: '' });
+      setSelectedFile(null);
       fetchProducts();
 
     } catch (err: unknown) {
       console.error("Error saving product:", err);
-      setError("Error al guardar el producto.");
-      // Keep modal open or provide feedback
+      setError("Error al guardar el producto en la base de datos.");
+      // Note: Image might be uploaded but product not saved. Manual cleanup in storage might be needed.
+    } finally {
+        setIsUploading(false); // Stop loading indicator
     }
   };
 
@@ -512,6 +568,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setCurrentSubcategories(getSubcategories(editingProduct.category));
     }
   }, [isEditModalOpen, editingProduct]);
+
+  // --- Handle File Selection ---
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
+    } else {
+      setSelectedFile(null);
+    }
+  };
 
 
   return (
@@ -668,31 +733,43 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   onChange={(e) => handleNewProductChange('promotionPrice', e.target.value)}
                 />
               </label>
-              {/* Image Selection Button */}
-              <Flex direction="column" gap="1">
+              {/* File Input for Image Upload */}
+              <label>
                 <Text as="div" size="2" mb="1" weight="bold">
-                  Imagen
+                  Imagen (Opcional)
                 </Text>
-                <Flex align="center" gap="3">
-                  <Button variant="outline" onClick={() => setIsImageModalOpen(true)}>
-                    Seleccionar Imagen
-                  </Button>
-                  {newProduct.imageUrl && (
-                    <Text size="1" color="gray" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {newProduct.imageUrl}
-                    </Text>
-                  )}
-                </Flex>
-              </Flex>
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp" // Suggest image types
+                  onChange={handleFileChange}
+                  style={{
+                      display: 'block', // Make it block for better layout control
+                      marginTop: '4px', // Add some space
+                      // Basic styling, can be improved
+                      padding: '8px',
+                      border: '1px solid var(--gray-a6)',
+                      borderRadius: 'var(--radius-2)',
+                      fontSize: 'var(--font-size-2)'
+                  }}
+                />
+                {/* Display selected file name */}
+                {selectedFile && (
+                  <Text size="1" color="gray" mt="1">
+                    Archivo seleccionado: {selectedFile.name}
+                  </Text>
+                )}
+              </label>
             </Flex>
 
             <Flex gap="3" mt="4" justify="end">
               <Dialog.Close>
-                <Button variant="soft" color="gray">
+                <Button variant="soft" color="gray" onClick={() => setSelectedFile(null)}> {/* Clear file on cancel */}
                   Cancelar
                 </Button>
               </Dialog.Close>
-              <Button onClick={handleSaveNewProduct}>Guardar Producto</Button>
+              <Button onClick={handleSaveNewProduct} disabled={isUploading}>
+                {isUploading ? 'Guardando...' : 'Guardar Producto'}
+              </Button>
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
@@ -709,12 +786,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <Box
                   key={imagePath}
                   onClick={() => {
-                    // Determine which state to update based on which modal is open
-                    if (isAddModalOpen) {
-                      handleNewProductChange('imageUrl', imagePath);
-                    } else if (isEditModalOpen && editingProduct) {
+                    // Only update the editing product state now
+                    if (isEditModalOpen && editingProduct) {
                       handleEditingProductChange('imageUrl', imagePath);
                     }
+                    // Do nothing if the Add modal was somehow open when clicking here
                     setIsImageModalOpen(false); // Close this modal
                   }}
                   style={{
