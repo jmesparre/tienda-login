@@ -406,9 +406,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         imageUrl = urlData.publicUrl;
         console.log('Image uploaded successfully:', imageUrl);
 
-      } catch (uploadErr: any) {
+      } catch (uploadErr: unknown) { // Change type from any to unknown
         console.error("Error during image upload:", uploadErr);
-        setError(`Error al subir la imagen: ${uploadErr.message}`);
+        // Type check before accessing properties
+        const errorMessage = uploadErr instanceof Error ? uploadErr.message : String(uploadErr);
+        setError(`Error al subir la imagen: ${errorMessage}`);
         setIsUploading(false); // Stop loading on upload error
         return; // Stop the process if upload fails
       }
