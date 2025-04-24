@@ -1,7 +1,7 @@
 "use client"; // Mark as a Client Component for state management
 
 import { useState, useCallback } from 'react'; // Import useCallback
-import { Flex, Select, Text } from '@radix-ui/themes'; // Import Select and Text
+import { Flex, Select } from '@radix-ui/themes'; // Import Select and Text
 import Header from '@/components/Header'; // Import the Header component
 import CategoryFilters from '@/components/CategoryFilters'; // Import CategoryFilters
 import ProductGrid from '@/components/ProductGrid'; // Import ProductGrid
