@@ -985,7 +985,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         <Select.Root value={sortOrder} onValueChange={setSortOrder} size="2">
             <Select.Trigger placeholder="Filtros" />
             <Select.Content>
-              <Select.Item value="default">Ordenar por defecto</Select.Item>
+              <Select.Item value="default"> por defecto</Select.Item>
               <Select.Separator />
               <Select.Item value="az">Nombre (A-Z)</Select.Item>
               <Select.Item value="za">Nombre (Z-A)</Select.Item>

@@ -91,7 +91,7 @@ footer {
   left: 0;
   z-index: -1;
   transition: all 0.4s;
-  background-color: white; /* Match button text color */
+  background-color: #ffa2002f; /* Match button text color */
 }
 
 .btn-animated:hover::after {
@@ -173,10 +173,6 @@ footer {
 
 .filtros-productos button.rt-reset {
   background-color: #fff0c8;
-}
-
-.filtros-productos {
-  margin-top: -38px;
 }
 
 .bg-sort {

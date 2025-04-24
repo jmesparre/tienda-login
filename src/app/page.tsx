@@ -40,27 +40,32 @@ export default function Home() {
         // Remove searchTerm and onSearchTermChange props
         onResetFilters={handleResetFilters} // Pass the reset function
       /> {/* Pass only reset handler */}
-      <CategoryFilters
-        selectedCategory={selectedCategory} // Pass the selected category state
-        selectedSubcategory={selectedSubcategory} // Pass selected subcategory state
-        onSelectCategory={handleSelectCategory} // Pass the updated category handler
-        onSelectSubcategory={handleSelectSubcategory} // Pass the new subcategory handler
-      />
-      <Flex direction="column" gap="4" p="4">
-        {/* Add Sort Dropdown */}
-        <Flex justify="end" align="center" gap="2" className='filtros-productos' >
-           <Text size="2" weight="medium">Ordenar por:</Text>
-           <Select.Root value={sortOption} onValueChange={setSortOption}>
+
+      {/* Flex container for Filters and Sort Dropdown */}
+      <Flex justify="between" align="center" gap="4" p="4">
+        <CategoryFilters
+          selectedCategory={selectedCategory} // Pass the selected category state
+          selectedSubcategory={selectedSubcategory} // Pass selected subcategory state
+          onSelectCategory={handleSelectCategory} // Pass the updated category handler
+          onSelectSubcategory={handleSelectSubcategory} // Pass the new subcategory handler
+        />
+
+        {/* Sort Dropdown */}
+        <Flex align="center" gap="2" className='filtros-productos'> {/* Align items, parent Flex handles spacing */}
+          <Select.Root value={sortOption} onValueChange={setSortOption}>
             <Select.Trigger placeholder="Seleccionar orden..." />
             <Select.Content className='bg-sort'>
-              <Select.Item value="alfabetico">Alfabético (A-Z)</Select.Item>
+              <Select.Item value="alfabetico">Ordenar (A-Z)</Select.Item>
               <Select.Item value="menor-precio">Menor Precio</Select.Item>
               <Select.Item value="mayor-precio">Mayor Precio</Select.Item>
               <Select.Item value="ofertas">Ofertas</Select.Item>
             </Select.Content>
           </Select.Root>
         </Flex>
+      </Flex>
 
+      {/* Container for the Product Grid */}
+      <Flex direction="column" gap="4" px="4" pb="4"> {/* Adjusted padding */}
         <ProductGrid
           selectedCategory={selectedCategory}
           selectedSubcategory={selectedSubcategory}
