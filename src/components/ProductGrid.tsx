@@ -56,21 +56,21 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
         .select('*', { count: 'exact' }) // Select all columns and get the total count
         .eq('is_paused', false); // Exclude paused products
 
-      // Apply category filter if not 'Todo'
-      if (selectedCategory !== 'Todo') {
-        query = query.eq('category', selectedCategory);
-      }
-
-      // Apply subcategory filter if not 'Todo' and a category is selected
-      if (selectedCategory !== 'Todo' && selectedSubcategory !== 'Todo') {
-        query = query.eq('subcategory', selectedSubcategory);
-      }
-
-      // Apply search term filter (case-insensitive)
-      // If searchTerm exists, it might override or combine with category filters based on desired UX
-      // Here, we combine: search within the selected category/subcategory if they are set.
+      // Apply search term filter FIRST (case-insensitive)
       if (searchTerm) {
+        // If there's a search term, apply it to the name across ALL products
         query = query.ilike('name', `%${searchTerm}%`);
+      } else {
+        // ONLY apply category/subcategory filters if there is NO search term
+        // Apply category filter if not 'Todo'
+        if (selectedCategory !== 'Todo') {
+          query = query.eq('category', selectedCategory);
+        }
+
+        // Apply subcategory filter if not 'Todo' and a category is selected
+        if (selectedCategory !== 'Todo' && selectedSubcategory !== 'Todo') {
+          query = query.eq('subcategory', selectedSubcategory);
+        }
       }
 
       // Define sorting logic based on sortOption
@@ -193,7 +193,13 @@ export default function ProductGrid({ selectedCategory, selectedSubcategory, sea
 
   // Render loading spinner on initial load (page 1)
   if (loading && currentPage === 1) {
-    return <Flex justify="center" p="4"><Spinner size="3" /><Text className='pt-8 ml-2'>Cargando productos...</Text></Flex>;
+    // Centered spinner and text vertically
+    return (
+      <Flex direction="column" align="center" justify="center" p="4" gap="2" style={{ minHeight: '200px' }}> {/* Added minHeight for better vertical centering */}
+        <Spinner size="3" />
+        <Text>Cargando productos...</Text> {/* Removed pt-8 and ml-2 */}
+      </Flex>
+    );
   }
 
   // Render error message if an error occurred

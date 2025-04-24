@@ -586,7 +586,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       {/* Header/Navbar */}
       <Flex justify="between" align="center" mb="4" p="3" style={{ borderBottom: '1px solid var(--gray-a6)' }}>
         <Heading as="h1" size="6" weight="bold">
-          Tienda San Luis
+          <Image
+                    src="/logo.png"
+                    alt="tienda-sanluis"
+                    width={173}
+                    height={63}
+                    priority // Add priority prop for LCP optimization
+                    style={{ display: 'inline-block', cursor: 'pointer', height: 'auto' }} // Add height: 'auto' to maintain aspect ratio
+                  />
         </Heading>
         <Flex gap="4" align="center" flexGrow="1" justify="center" mx="6">
            <TextField.Root
@@ -736,31 +743,54 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 />
               </label>
               {/* File Input for Image Upload */}
-              <label>
+              <Box> {/* Wrap in a Box for layout */}
                 <Text as="div" size="2" mb="1" weight="bold">
-                  Imagen (Opcional)
+                  Imagen
                 </Text>
+                {/* Hidden actual file input */}
                 <input
                   type="file"
-                  accept="image/png, image/jpeg, image/webp" // Suggest image types
+                  id="file-upload-input" // Add an ID
+                  accept="image/png, image/jpeg, image/webp"
                   onChange={handleFileChange}
                   style={{
-                      display: 'block', // Make it block for better layout control
-                      marginTop: '4px', // Add some space
-                      // Basic styling, can be improved
-                      padding: '8px',
-                      border: '1px solid var(--gray-a6)',
-                      borderRadius: 'var(--radius-2)',
-                      fontSize: 'var(--font-size-2)'
+                    // Hide the default input visually but keep it accessible
+                    opacity: 0,
+                    position: 'absolute',
+                    zIndex: -1,
+                    width: '0.1px',
+                    height: '0.1px',
+                    overflow: 'hidden',
                   }}
                 />
-                {/* Display selected file name */}
-                {selectedFile && (
+                {/* Custom styled button acting as the input trigger */}
+                <label htmlFor="file-upload-input" style={{ display: 'inline-block', width: '100%', cursor: 'pointer' }}>
+                  <Box
+                    style={{
+                      padding: '8px 12px', // Match TextField padding
+                      border: '1px solid var(--gray-a7)', // Match TextField border
+                      borderRadius: 'var(--radius-2)',
+                      fontSize: 'var(--font-size-2)',
+                      lineHeight: '20px', // Match TextField line height
+                      backgroundColor: 'var(--gray-a1)', // Match TextField background
+                      color: selectedFile ? 'var(--gray-12)' : 'var(--gray-9)', // Show filename or placeholder text color
+                      boxSizing: 'border-box',
+                      width: '100%',
+                      minHeight: '32px', // Ensure minimum height like TextField
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                  >
+                    {selectedFile ? selectedFile.name : 'Seleccionar imagen'}
+                  </Box>
+                </label>
+                {/* Display selected file name (optional, as it's now inside the box) */}
+                {/* {selectedFile && (
                   <Text size="1" color="gray" mt="1">
                     Archivo seleccionado: {selectedFile.name}
                   </Text>
-                )}
-              </label>
+                )} */}
+              </Box>
             </Flex>
 
             <Flex gap="3" mt="4" justify="end">

@@ -37,7 +37,7 @@ export default function Header({ onResetFilters }: HeaderProps) { // Remove unus
           placeholder="Buscar…"
           size="3"
           value={headerSearchTerm} // Use context state for value
-          className="bg-[#FFFBF5] border border-[#EAE0CC]" // Added background and border
+          className="search-main" // Added background and border
           onChange={(e) => setHeaderSearchTerm(e.target.value)} // Update context state on change
         >
            <TextField.Slot>

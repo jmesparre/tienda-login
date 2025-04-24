@@ -118,8 +118,8 @@ footer {
 }
 
 
-input.rt-TextFieldInput {
-  background: rgba(252, 238, 200, 0.96);
+.search-main input {
+  background: rgb(255, 246, 214);
 }
 
 .rt-Card input {
@@ -127,7 +127,12 @@ input.rt-TextFieldInput {
 }
 
 .rt-TextFieldSlot {
-  background:  rgba(252, 238, 200, 0.96);
+  background: rgb(255, 246, 214);
+}
+
+.rt-BaseButton:where(.rt-variant-solid):where(.rt-high-contrast) {
+  background-color: #d0c2a7;
+  color: black;
 }
 
 .rt-BaseButton:where(.rt-variant-outline) {
@@ -166,7 +171,7 @@ input.rt-TextFieldInput {
   min-width: 90px;
 }
 
-button.rt-reset.rt-SelectTrigger.rt-r-size-2.rt-variant-surface {
+.filtros-productos button.rt-reset {
   background-color: #fff0c8;
 }
 
@@ -212,5 +217,10 @@ button.rt-reset.rt-SelectTrigger.rt-r-size-2.rt-variant-surface {
   opacity: 0; /* Force hide default state when animating */
 }
 
+.rt-TableRootTable {
+  background-color: #fff0c8;
+}
 
-
+.rt-TextFieldRoot {
+  background-color:rgb(255, 246, 214);
+}
