@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { supabase } from '@/lib/supabaseClient'; // Import Supabase client
 
 // Define the structure for an item in the cart
 interface CartItem {
@@ -32,6 +33,7 @@ interface CartContextType {
   headerSearchTerm: string; // Add state for header search term
   setHeaderSearchTerm: (term: string) => void; // Add setter for search term
   isCartAnimating: boolean; // Add state for cart animation trigger
+  minPurchaseAmount: number | null; // Add state for minimum purchase amount
 }
 
 // Create the context with a default value
@@ -47,6 +49,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartResetCounter, setCartResetCounter] = useState(0); // State for reset signal
   const [headerSearchTerm, setHeaderSearchTerm] = useState(''); // Add state for search term
   const [isCartAnimating, setIsCartAnimating] = useState(false); // Add animation state
+  const [minPurchaseAmount, setMinPurchaseAmount] = useState<number | null>(null); // Initialize min purchase amount state
 
   // Load cart from localStorage on initial mount
   useEffect(() => {
@@ -66,6 +69,32 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       console.error("Failed to parse cart from localStorage:", error);
       localStorage.removeItem('laViejaEstacionCart'); // Clear corrupted data
     }
+
+    // Fetch minimum purchase amount
+    const fetchMinAmount = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('app_settings')
+          .select('min_purchase_amount')
+          .eq('id', 1)
+          .single();
+
+        if (error) {
+          console.warn("Could not fetch minimum purchase amount setting:", error.message);
+          setMinPurchaseAmount(0); // Default to 0 or null if fetch fails or setting doesn't exist
+        } else if (data) {
+          setMinPurchaseAmount(data.min_purchase_amount);
+        } else {
+           setMinPurchaseAmount(0); // Default if no data found
+        }
+      } catch (fetchError) {
+        console.error("Error fetching minimum purchase amount:", fetchError);
+        setMinPurchaseAmount(0); // Default on error
+      }
+    };
+
+    fetchMinAmount();
+
   }, []); // Empty dependency array ensures this runs only once on mount
 
   // Save cart to localStorage whenever it changes
@@ -181,6 +210,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     headerSearchTerm, // Expose search term state
     setHeaderSearchTerm, // Expose search term setter
     isCartAnimating, // Expose animation state
+    minPurchaseAmount, // Expose minimum purchase amount
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

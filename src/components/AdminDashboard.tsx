@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ChangeEvent } from 'react'; // Import useEffect and ChangeEvent
+import { useState, useEffect, ChangeEvent, useMemo } from 'react'; // Import useEffect, ChangeEvent, useMemo
 import Image from 'next/image'; // Import next/image
 import { supabase } from '@/lib/supabaseClient'; // Import supabase client
 import { v4 as uuidv4 } from 'uuid'; // Import uuid for unique filenames
@@ -19,7 +19,7 @@ import {
   Tooltip // Added Tooltip for icons
   // Removed unused TextArea import
 } from '@radix-ui/themes';
-import { Cross1Icon, Cross2Icon, Pencil1Icon, MagnifyingGlassIcon, PlusIcon, PlayIcon, PauseIcon, CheckIcon } from '@radix-ui/react-icons';
+import { Cross1Icon, Cross2Icon, Pencil1Icon, MagnifyingGlassIcon, PlusIcon, PlayIcon, PauseIcon, CheckIcon, GearIcon } from '@radix-ui/react-icons'; // Added GearIcon
 // Import category data and helpers
 import { mainCategories as categoriesData, getSubcategories } from '@/lib/categories';
 
@@ -214,10 +214,50 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   };
 
 
-  // --- Fetch products on component mount ---
+  // --- Fetch initial data on component mount ---
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    const fetchInitialData = async () => {
+      setLoading(true); // Use main loading state initially
+      setError(null);
+      setMinAmountError(null);
+
+      try {
+        // Fetch products
+        await fetchProducts(); // Assuming fetchProducts sets its own loading to false
+
+        // Fetch minimum purchase amount
+        const { data: settingsData, error: settingsError } = await supabase
+          .from('app_settings')
+          .select('min_purchase_amount')
+          .eq('id', 1) // Assuming the settings row has id 1
+          .single(); // Expect only one row
+
+        if (settingsError) {
+          // Don't throw, maybe the table/row doesn't exist yet or RLS is blocking
+          console.warn("Could not fetch minimum purchase amount:", settingsError.message);
+          // setError("No se pudo cargar la configuración de monto mínimo."); // Optional: Show general error
+        } else if (settingsData) {
+          const amount = settingsData.min_purchase_amount;
+          setCurrentMinAmount(amount);
+          setMinAmountInput(amount !== null ? amount.toString() : ''); // Initialize input
+        }
+
+      } catch (err: unknown) {
+        console.error("Error fetching initial data:", err);
+        setError("Error al cargar datos iniciales."); // General error
+      } finally {
+        // Ensure loading is false even if fetchProducts had an issue
+        // fetchProducts should handle its own setLoading(false)
+        // If settings fetch failed but products succeeded, loading might still be true
+        // We rely on fetchProducts setting loading to false eventually
+        // If fetchProducts fails early, this finally block might run before setLoading(false) in fetchProducts
+        // Consider refining loading state management if needed
+         setLoading(false); // Set loading false after all fetches attempt
+      }
+    };
+
+    fetchInitialData();
+  }, []); // Empty dependency array means run once on mount
 
   // --- Edit Product Handler ---
   const handleEditProduct = (productId: number) => {
@@ -321,6 +361,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [isUploading, setIsUploading] = useState(false); // State for upload loading indicator
   // State for dynamic subcategories in modals
   const [currentSubcategories, setCurrentSubcategories] = useState<string[]>([]);
+  // State for Minimum Purchase Amount Modal
+  const [isMinAmountModalOpen, setIsMinAmountModalOpen] = useState(false);
+  const [minAmountInput, setMinAmountInput] = useState(''); // Input value as string
+  const [currentMinAmount, setCurrentMinAmount] = useState<number | null>(null); // Stored value
+  const [isSavingMinAmount, setIsSavingMinAmount] = useState(false);
+  const [minAmountError, setMinAmountError] = useState<string | null>(null); // Error specific to min amount modal
 
   // --- Filtering and Sorting Logic ---
   let filteredProducts = products.filter(product =>
@@ -332,7 +378,42 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     filteredProducts = filteredProducts.filter(product => product.category === activeCategory);
   }
 
-  // TODO: Implement sorting logic based on sortOrder state using filteredProducts
+  // --- Sorting Logic ---
+  const sortedProducts = useMemo(() => {
+    let productsToSort = [...filteredProducts]; // Create a mutable copy
+
+    switch (sortOrder) {
+      case 'az':
+        productsToSort.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'za':
+        productsToSort.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'price_high_low':
+        // Handle potential null promotionPrice - prioritize it if lower
+        productsToSort.sort((a, b) => {
+            const priceA = a.promotionPrice ?? a.price;
+            const priceB = b.promotionPrice ?? b.price;
+            return priceB - priceA;
+        });
+        break;
+      case 'price_low_high':
+         // Handle potential null promotionPrice - prioritize it if lower
+        productsToSort.sort((a, b) => {
+            const priceA = a.promotionPrice ?? a.price;
+            const priceB = b.promotionPrice ?? b.price;
+            return priceA - priceB;
+        });
+        break;
+      case 'default':
+      default:
+        // Keep the default order (fetched as created_at descending)
+        // Or explicitly sort by createdAt if needed:
+        // productsToSort.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+    }
+    return productsToSort;
+  }, [filteredProducts, sortOrder]); // Recalculate when filters or sort order change
 
   // Update handler to manage subcategory reset and dynamic loading
   // Explicitly type the 'field' parameter to exclude 'imageUrl'
@@ -571,6 +652,61 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
   }, [isEditModalOpen, editingProduct]);
 
+
+  // --- Handle Save Minimum Purchase Amount ---
+  const handleSaveMinAmount = async () => {
+    setIsSavingMinAmount(true);
+    setMinAmountError(null);
+
+    const valueToSave = minAmountInput.trim();
+    let amount: number | null = null;
+
+    if (valueToSave === '' || valueToSave === '0') {
+      amount = null; // Treat empty or zero as no minimum
+    } else {
+      amount = parseFloat(valueToSave);
+      if (isNaN(amount) || amount < 0) {
+        setMinAmountError("Por favor ingrese un monto válido (número positivo) o deje vacío para sin mínimo.");
+        setIsSavingMinAmount(false);
+        return;
+      }
+    }
+
+    try {
+      const { error: updateError } = await supabase
+        .from('app_settings')
+        .update({ min_purchase_amount: amount })
+        .eq('id', 1); // Update the row with id 1
+
+      if (updateError) {
+        // Check for specific errors, e.g., row not found (though upsert might be better)
+        if (updateError.code === 'PGRST204') { // PostgREST code for no rows updated
+             // Try inserting if update failed because row doesn't exist
+             const { error: insertError } = await supabase
+                 .from('app_settings')
+                 .insert({ id: 1, min_purchase_amount: amount });
+             if (insertError) {
+                 throw new Error(`Failed to insert settings: ${insertError.message}`); // Throw combined error
+             }
+         } else {
+             throw updateError; // Re-throw other update errors
+         }
+      }
+
+      console.log('Minimum purchase amount updated successfully:', amount);
+      setCurrentMinAmount(amount); // Update local state
+      setIsMinAmountModalOpen(false); // Close modal
+
+    } catch (err: unknown) {
+      console.error("Error saving minimum purchase amount:", err);
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      setMinAmountError(`Error al guardar el monto mínimo: ${message}`);
+    } finally {
+      setIsSavingMinAmount(false);
+    }
+  };
+
+
   // --- Handle File Selection ---
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -643,6 +779,54 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
       {/* Action Bar & Modals */}
       <Flex justify="end" align="center" mb="4" gap="4" px="3">
+        {/* Minimum Purchase Amount Modal */}
+        <Dialog.Root open={isMinAmountModalOpen} onOpenChange={setIsMinAmountModalOpen}>
+          <Dialog.Trigger>
+            <Button size="2" variant="soft"> {/* Changed variant for distinction */}
+              <GearIcon /> Pedido Mínimo
+            </Button>
+          </Dialog.Trigger>
+          <Dialog.Content style={{ maxWidth: 450 }}>
+            <Dialog.Title>Establecer Monto Mínimo de Compra</Dialog.Title>
+            <Dialog.Description size="2" mb="4">
+              Ingrese el monto mínimo requerido para los pedidos. Deje vacío o ingrese 0 para no aplicar un mínimo.
+            </Dialog.Description>
+
+            <Flex direction="column" gap="3">
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Monto Mínimo ($)
+                </Text>
+                <TextField.Root
+                  type="number"
+                  placeholder="Ej: 15000"
+                  value={minAmountInput}
+                  onChange={(e) => setMinAmountInput(e.target.value)}
+                  onFocus={() => setMinAmountError(null)} // Clear error on focus
+                />
+              </label>
+              {minAmountError && (
+                <Text size="1" color="red">{minAmountError}</Text>
+              )}
+            </Flex>
+
+            <Flex gap="3" mt="4" justify="end">
+              <Dialog.Close>
+                <Button variant="soft" color="gray" onClick={() => {
+                  // Reset input to current stored value on cancel
+                  setMinAmountInput(currentMinAmount !== null ? currentMinAmount.toString() : '');
+                  setMinAmountError(null); // Clear error
+                }}>
+                  Cancelar
+                </Button>
+              </Dialog.Close>
+              <Button onClick={handleSaveMinAmount} disabled={isSavingMinAmount}>
+                {isSavingMinAmount ? 'Guardando...' : 'Guardar Monto'}
+              </Button>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
+
         {/* Add Product Modal */}
         <Dialog.Root open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
           <Dialog.Trigger>
@@ -1002,12 +1186,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             <Table.ColumnHeaderCell>Imagen</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Nombre</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Categoría</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Subcategoría</Table.ColumnHeaderCell> {/* Added Subcategory Column */}
+            <Table.ColumnHeaderCell>Subcategoría</Table.ColumnHeaderCell> 
             <Table.ColumnHeaderCell>Precio</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Unidad</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Oferta</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Acciones / Estado</Table.ColumnHeaderCell>
-          </Table.Row>
+            <Table.ColumnHeaderCell>Acciones</Table.ColumnHeaderCell></Table.Row>
         </Table.Header>
 
         <Table.Body>
@@ -1026,8 +1209,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                <Table.Cell colSpan={8} align="center"><Text>No hay productos para mostrar.</Text></Table.Cell> {/* Updated colSpan */}
              </Table.Row>
           )}
-          {/* Map over filtered products */}
-          {!loading && !error && filteredProducts.map((product) => (
+          {/* Map over sorted products */}
+          {!loading && !error && sortedProducts.map((product) => (
             <Table.Row key={product.id} align="center">
               {/* Image Cell */}
               <Table.Cell>
@@ -1042,7 +1225,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               </Table.Cell>
               <Table.RowHeaderCell>{product.name}</Table.RowHeaderCell>
               <Table.Cell>{product.category}</Table.Cell>
-              <Table.Cell>{product.subcategory || '-'}</Table.Cell> {/* Display subcategory or dash */}
+              <Table.Cell>{product.subcategory || '-'}</Table.Cell>
               {/* Editable Price Cell */}
               <Table.Cell>
                 <Flex align="center" gap="2">

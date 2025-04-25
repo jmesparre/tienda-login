@@ -1,17 +1,21 @@
 "use client";
 
+import { useState } from 'react'; // Import useState
 import { Box, Flex, Text, Button, IconButton, ScrollArea, Heading, Separator } from '@radix-ui/themes';
 import { Cross1Icon, TrashIcon } from '@radix-ui/react-icons';
 import { useCart } from '@/context/CartContext';
 
 export default function CartSidebar() {
-  // Add clearCart and setHeaderSearchTerm to the destructured hook
-  const { cartItems, isCartOpen, closeCart, removeFromCart, getCartTotalPrice, clearCart, setHeaderSearchTerm } = useCart();
+  // Add minPurchaseAmount to the destructured hook
+  const { cartItems, isCartOpen, closeCart, removeFromCart, getCartTotalPrice, clearCart, setHeaderSearchTerm, minPurchaseAmount } = useCart();
+  const [showMinAmountError, setShowMinAmountError] = useState(false); // State for error message
 
   if (!isCartOpen) {
     return null; // Don't render if closed
   }
 
+  // Use minPurchaseAmount from context (default to 0 if null/undefined during initial load)
+  const effectiveMinAmount = minPurchaseAmount ?? 0;
   const totalPrice = getCartTotalPrice();
 
   // Basic WhatsApp message generation (can be improved)
@@ -33,6 +37,16 @@ export default function CartSidebar() {
   const whatsappNumber = "5491132750873"; // Updated number
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${generateWhatsAppMessage()}`;
 
+  // Handle WhatsApp button click
+  const handleSendWhatsApp = () => {
+    // Check against effectiveMinAmount, only block if it's greater than 0
+    if (effectiveMinAmount > 0 && totalPrice < effectiveMinAmount) {
+      setShowMinAmountError(true); // Show error if below minimum (and minimum is set)
+    } else {
+      setShowMinAmountError(false); // Hide error if above minimum or no minimum is set
+      window.open(whatsappUrl, '_blank'); // Open WhatsApp link
+    }
+  };
 
   return (
     // Overlay container
@@ -145,6 +159,14 @@ export default function CartSidebar() {
 
       {/* Sidebar Footer */}
       <Box p="4" style={{ borderTop: '1px solid var(--gray-a6)', flexShrink: 0 }}>
+         {/* Conditionally render the minimum amount text only if effectiveMinAmount > 0 */}
+         {effectiveMinAmount > 0 && totalPrice < effectiveMinAmount && (
+           <Text size="1" style={{ color: showMinAmountError ? 'red' : 'inherit' }}>
+             El pedido mínimo para envío es de ${effectiveMinAmount.toLocaleString('es-AR')}
+           </Text>
+         )}
+         {/* Add a small space even if the message isn't shown, or adjust layout */}
+         {(effectiveMinAmount <= 0 || totalPrice >= effectiveMinAmount) && <Box style={{ height: 'calc(var(--font-size-1) * var(--line-height-1))' }} />} {/* Placeholder space */}
          <Separator my="3" size="4" />
          <Flex justify="between" align="center" mb="3">
             <Text weight="bold">Total:</Text>
@@ -154,7 +176,7 @@ export default function CartSidebar() {
             size="3"
             style={{ width: '100%', backgroundColor: 'var(--green-9)', color: 'white' }}
             disabled={cartItems.length === 0}
-            onClick={() => window.open(whatsappUrl, '_blank')} // Open WhatsApp link
+            onClick={handleSendWhatsApp} // Use the new handler
         >
             Enviar por WhatsApp
         </Button>
