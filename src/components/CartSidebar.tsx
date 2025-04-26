@@ -130,7 +130,7 @@ export default function CartSidebar() {
                           closeCart();
                         }}
                         style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationColor: 'var(--gray-a8)' }} // Add pointer and underline on hover
-                        onMouseEnter={(e) => (e.currentTarget.style.textDecorationColor = 'var(--green-11)')} // Change underline color on hover
+                        onMouseEnter={(e) => (e.currentTarget.style.textDecorationColor = 'var(--gray-a9)')} // Change underline color on hover
                         onMouseLeave={(e) => (e.currentTarget.style.textDecorationColor = 'var(--gray-a8)')} // Revert underline color
                       >
                         {item.name}

@@ -380,7 +380,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   // --- Sorting Logic ---
   const sortedProducts = useMemo(() => {
-    let productsToSort = [...filteredProducts]; // Create a mutable copy
+    const productsToSort = [...filteredProducts]; // Create a mutable copy
 
     switch (sortOrder) {
       case 'az':
@@ -1285,12 +1285,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               </Table.Cell>
               <Table.Cell>
                 <Flex gap="2">
-                  <IconButton size="1" variant="soft" onClick={() => handleEditProduct(product.id)}>
-                    <Pencil1Icon />
-                  </IconButton>
-                  <IconButton size="1" variant="soft" color="red" onClick={() => handleDeleteProduct(product.id)}>
-                    <Cross1Icon />
-                  </IconButton>
+                 <Tooltip content={"Editar producto"}>
+                    <IconButton size="1" variant="soft" onClick={() => handleEditProduct(product.id)}>
+                      <Pencil1Icon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip content={"Eliminar producto"}>
+                    <IconButton size="1" variant="soft" color="red" onClick={() => handleDeleteProduct(product.id)}>
+                      <Cross1Icon />
+                    </IconButton>
+                  </Tooltip>
                   {/* Pause/Resume Button */}
                   <Tooltip content={product.isPaused ? "Reanudar producto" : "Pausar producto"}>
                     <IconButton
